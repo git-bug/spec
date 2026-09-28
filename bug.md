@@ -18,8 +18,8 @@ thread of comments. Its state is derived by replaying an ordered sequence of ope
 | Git reference  | `refs/bugs/<bug-id>` |
 | Format version | 4                    |
 
-The bug's ID equals the ID of its first operation pack, which in turn equals the ID of its
-`CreateOperation` (the only operation in the first pack).
+The bug's ID equals the ID of its `CreateOperation`, the first operation of the first pack
+(see [ids.md](ids.md#2-derivation)).
 
 
 ## 3. Operation type constants
@@ -65,7 +65,7 @@ Creates the bug. The ID of this operation becomes the bug's ID.
 
 **Apply**: initializes all snapshot fields. Sets the bug ID (equal to this operation's ID),
 the author, the title, and the first comment. The opening comment is identified by this
-operation's ID; its combined ID (see [README.md](README.md#combined-ids)) is exposed in
+operation's ID; its combined ID (see [ids.md](ids.md#5-combined-ids)) is exposed in
 APIs and UIs. A second `CreateOperation` encountered during replay is silently ignored.
 
 Example:
@@ -115,7 +115,7 @@ Adds a comment to the bug thread.
 | Files   | `files`   | array of git hash strings | yes      | Blobs referenced in `message`; empty array if none |
 
 **Apply**: appends a new comment to the snapshot's comment list. The comment is identified
-by this operation's ID; its combined ID (see [README.md](README.md#combined-ids)) is
+by this operation's ID; its combined ID (see [ids.md](ids.md#5-combined-ids)) is
 exposed in APIs and UIs. **Grow-only log semantics**: two concurrent `AddCommentOperation`s
 both survive as distinct comments; no comment is ever dropped or overwritten by another.
 Their relative order in the list follows the total operation order (§9 of the DAG spec).
