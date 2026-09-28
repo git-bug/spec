@@ -4,8 +4,6 @@ This document is the formal specification for the generic data format used by al
 git-bug (bugs, pull-requests, etc.). It is intended for contributors and for authors of
 third-party clients that read or write git-bug data.
 
-For the motivation behind these design choices, see [Data model - the rational](../design/data-model.md).
-
 
 ## 1. Overview
 
@@ -98,7 +96,8 @@ The pack's ID is the SHA-256 of the exact bytes written to the `ops` blob (see [
 
 ### 5.2 Entity ID
 
-The entity's ID is the pack ID of its first (root) commit's operation pack.
+The entity's ID is the operation ID (see [§6.2](#62-operation-id)) of the **first operation**
+in its root commit's operation pack (see [§7](#7-id-derivation)).
 
 
 ## 6. Operations
@@ -167,20 +166,16 @@ state. Its concrete `type` integer is assigned by each entity.
 
 ## 7. ID derivation
 
-All IDs in git-bug are 64-character lowercase hex strings derived from SHA-256:
+IDs are specified in [ids.md](ids.md). In summary, for this layer:
 
-```
-id = hex(sha256(data))
-```
+| What         | Input data                                                          |
+|--------------|---------------------------------------------------------------------|
+| Operation ID | Raw JSON bytes of the operation object as stored in the `ops` array |
+| Pack ID      | Raw JSON bytes of the full `ops` blob                               |
+| Entity ID    | Operation ID of the first operation in the root pack                |
 
-| What                            | Input data                                                          |
-|---------------------------------|---------------------------------------------------------------------|
-| Operation ID                    | Raw JSON bytes of the operation object as stored in the `ops` array |
-| Pack ID / Entity ID (root pack) | Raw JSON bytes of the full `ops` blob                               |
-
-A reader derives the ID by hashing the bytes exactly as stored in git — no re-encoding is
-needed or performed. The reference implementation writes compact JSON (no added whitespace or
-pretty print) as a storage convention.
+A reader **must** reject an entity whose reference ID does not match the ID of the first
+operation in its root pack, or in which two operations share the same ID.
 
 
 ## 8. Lamport clocks

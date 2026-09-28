@@ -1,59 +1,19 @@
 # git-bug data format specification
 
-This directory contains the formal specification for the data format used by git-bug to
-store entities (bugs, pull-requests, …) and identities inside a git repository.
-
-For the motivation behind the design — why operations instead of snapshots, why Lamport
-clocks, why git objects — start with
-[Data model - the rational](../design/data-model.md).
+This directory specifies the data format git-bug uses to store entities (bugs,
+pull-requests, …) and identities inside a git repository.
 
 
 ## Documents
 
-### [DAG entity format](dag-entity.md)
+| Document                           | Scope                                                                                                |
+|------------------------------------|------------------------------------------------------------------------------------------------------|
+| [Identifiers](ids.md)              | ID format and derivation, prefixes, combined IDs                                                     |
+| [DAG entity format](dag-entity.md) | Base layer for all entities: commits, tree layout, operation packs, clocks, ordering, merge, signing |
+| [Identity format](identity.md)     | User identities: linear version chain, public keys, fast-forward merge                               |
+| [Bug entity](bug.md)               | The `bug` entity: operation types and snapshot semantics                                             |
 
-The base layer shared by all entity types. Covers:
-
-- How entities are stored as chains of git commits
-- Git reference naming (`refs/<namespace>/<id>`)
-- Tree entry layout (`ops`, `version-N`, `edit-clock-N`, `create-clock-N`, `extra/`)
-- OperationPack JSON structure and ID derivation
-- Common operation fields (type, timestamp, nonce, metadata)
-- File attachments, unknown operation handling, `SetMetadataOperation`, `NoOpOperation`
-- Lamport clock encoding and witnessing
-- Operation ordering algorithm (deterministic, clock-based)
-- Merge algorithm (5 scenarios, including merge commits for concurrent edits)
-- Commit signing with OpenPGP
-- Conformance requirements for readers and writers
-
-### [Identity format](identity.md)
-
-The identity layer, which is independent of the DAG entity format. Covers:
-
-- How user identities are stored as linear commit chains
-- Git reference naming (`refs/identities/<id>`)
-- Version blob JSON structure (name, email, keys, Lamport times, nonce)
-- OpenPGP public key storage and key rotation
-- Identity ID derivation
-- Fast-forward-only merge policy
-- Key lookup algorithm for signature verification
-- Known limitations (repository-local IDs, no concurrent edit support)
-
-### [Bug entity](bug.md)
-
-The `bug` entity, built on top of the DAG entity format. Covers:
-
-- Namespace (`bugs`) and format version (4)
-- All operation types with integer constants, field tables, and JSON examples:
-  `CreateOp`, `SetTitleOp`, `AddCommentOp`, `SetStatusOp`, `LabelChangeOp`,
-  `EditCommentOp`, `NoOpOp`, `SetMetadataOp`
-- Snapshot semantics (title, status, labels, comments, actors, participants)
-
-### Future entity specs
-
-Additional specs will be added here as new entity types are implemented
-(pull-requests, kanban boards, …). Each spec follows the same structure as `bug.md`.
-
+Each entity type gets its own spec, following the structure of `bug.md`.
 
 ## Third-party implementations and extensions
 
@@ -70,7 +30,7 @@ that identifiers can be reserved and extensions can be made visible to the wider
 
 ## Design principles
 
-### CRDT
+### Operation-based CRDT
 
 git-bug entities are **operation-based CRDTs** (CmRDTs). Rather than storing the current
 state of an entity directly, git-bug stores the sequence of *operations* that produced that
@@ -107,37 +67,17 @@ The same principle applies in the other direction: a client that only implements
 operations can still participate in the network, read the operations it understands, and
 write new operations, without corrupting the history for clients that implement more.
 
-### Combined IDs
+### Content-derived IDs
 
-Some elements within an entity — such as a comment within a bug — need a stable identifier
-that can be used in APIs and UIs. Rather than minting a separate ID, git-bug derives a
-**combined ID** from two regular IDs (a *primary* and a *secondary*) by interleaving their
-characters in a fixed pattern:
+Every ID is the SHA-256 of bytes stored in git, so IDs are globally unique without
+coordination and verifiable by any reader. Elements within an entity (such as comments) are
+addressed by *combined IDs*. See [ids.md](ids.md).
 
-```
-PSPSPSPPPSPPPPSPPPPSPPPPSPPPPSPPPPSPPPPSPPPPSPPPPSPPPPSPPPPSPPPP
-```
+### Format versioning
 
-(P = primary character, S = secondary character)
-
-The result is a 64-character string encoding 50 characters from the primary and 14 from the
-secondary. Because the interleaving is front-heavy, a short prefix of the combined ID
-contains a useful prefix of both source IDs:
-
-| Combined prefix length | Primary prefix chars | Secondary prefix chars |
-|------------------------|----------------------|------------------------|
-| 5                      | 3                    | 2                      |
-| 7                      | 4                    | 3                      |
-| 10                     | 6                    | 4                      |
-| 16                     | 11                   | 5                      |
-
-A 7-character prefix is enough to identify both the entity and the element with low
-collision risk.
-
-Combined IDs are **not stored in the git format**. They are derived at read time and used
-by APIs and UIs to reference secondary elements. The bug entity uses them for comment
-identifiers (primary = bug ID, secondary = operation ID that created the comment). Other
-entity types may apply the same scheme to their own secondary elements.
+Every commit's tree carries the entity's format version. A reader checks it before decoding.
+Incompatible changes bump the version and require migrating existing repositories with
+[git-bug-migration](https://github.com/git-bug/git-bug-migration).
 
 ### Format stability
 

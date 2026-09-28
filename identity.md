@@ -190,7 +190,7 @@ identity-id = hex(sha256(first_version_blob_bytes))
 A reader **must** verify that the ID encoded in the git reference matches the ID derived
 from the first version blob, and **must** reject the identity if they differ.
 
-See [dag-entity.md §7](dag-entity.md#7-id-derivation) for the general ID derivation rules.
+See [ids.md](ids.md) for the general ID format and derivation rules.
 
 
 ## 6. Merge

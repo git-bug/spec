@@ -23,7 +23,7 @@
           }
         ]
       },
-      "note": "The bug ID equals the ID of this CreateOperation, which equals hex(sha256(ops_blob_bytes))."
+      "note": "The bug ID equals the ID of this CreateOperation: hex(sha256(raw bytes of ops[0]))."
     },
     {
       "description": "Second pack: AddCommentOperation + LabelChangeOperation in one edit session",
@@ -119,7 +119,7 @@
 
   "id_derivation": [
     {
-      "description": "Bug ID equals the ID of its CreateOperation, which equals hex(sha256(ops_blob_bytes)) for the first pack.",
+      "description": "Bug ID equals the ID of its CreateOperation: hex(sha256(raw bytes of ops[0])) in the first pack.",
       "note": "Fill in expected_id by running the reference implementation against the first ops_blob example above."
     }
   ]
