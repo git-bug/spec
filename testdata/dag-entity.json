@@ -1,5 +1,5 @@
 {
-  "_comment": "Test vectors for the DAG entity format. Hash values are computed by the reference implementation (Go encoding/json + crypto/sha256). Run 'go test ./doc/spec/...' to verify.",
+  "_comment": "Test vectors for the DAG entity format. IDs are computed by the reference implementation (Go encoding/json + crypto/sha256). Git object hashes are the ones of a SHA-1 repository.",
 
   "id_derivation": [
     {
@@ -8,7 +8,7 @@
       "expected_id": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "description": "Operation pack with a single CreateOperation. Input is the exact bytes produced by Go's json.Marshal of the operationPack struct.",
+      "description": "Operation pack with a single CreateOperation: its ID is the SHA-256 of the exact bytes of the ops blob.",
       "input": {
         "author": {"id": "b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7"},
         "ops": [
@@ -22,8 +22,9 @@
           }
         ]
       },
-      "note": "The expected_id below is the SHA-256 of the compact JSON encoding of input (no spaces). Fill in by running the reference implementation.",
-      "expected_id": "<run: go test ./doc/spec/... -run TestVectors to generate>"
+      "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"test bug\",\"message\":\"\",\"files\":null}]}",
+      "note": "raw is input as written in git: compact JSON, with the keys in this order. expected_id is the SHA-256 of raw.",
+      "expected_id": "e38873b1914f55f93b5c1bf7c90539ea309c8edfbd5cde159e5f07559da576f0"
     }
   ],
 
@@ -33,10 +34,11 @@
       "entries": [
         {"name": "create-clock-1", "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"},
         {"name": "edit-clock-1",   "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"},
-        {"name": "ops",            "type": "blob", "hash": "<sha256 of the ops JSON blob>"},
+        {"name": "ops",            "type": "blob", "hash": "70bc360cd82ec97787eff211c4b228872eaea9ae"},
         {"name": "version-4",      "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"}
       ],
       "notes": [
+        "'ops' holds the first operation pack example below, whose bytes are the raw of id_derivation.",
         "The empty blob hash e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 is used for all metadata entries.",
         "Entry names are sorted lexicographically by git.",
         "No 'extra/' subtree because this operation has no file attachments."
@@ -46,7 +48,7 @@
       "description": "Git tree for a later (non-root) commit with edit-clock=2, format version 4",
       "entries": [
         {"name": "edit-clock-2", "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"},
-        {"name": "ops",         "type": "blob", "hash": "<sha256 of the ops JSON blob>"},
+        {"name": "ops",         "type": "blob", "hash": "<git hash of the ops blob>"},
         {"name": "version-4",   "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"}
       ],
       "notes": [
@@ -58,10 +60,11 @@
       "description": "Git tree for a merge commit (empty ops, two parents)",
       "entries": [
         {"name": "edit-clock-3", "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"},
-        {"name": "ops",         "type": "blob", "hash": "<sha256 of '{\"author\":{\"id\":\"...\"},\"ops\":[]}'>" },
+        {"name": "ops",         "type": "blob", "hash": "615d687cbe8d87ce9739ac16c1c75597f66d96db"},
         {"name": "version-4",   "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"}
       ],
       "notes": [
+        "'ops' holds the empty operation pack example below, as compact JSON.",
         "Merge commits have two parents in git but their ops array is empty.",
         "The edit clock is advanced past both parents."
       ]

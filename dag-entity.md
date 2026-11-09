@@ -28,6 +28,25 @@ deterministic order defined by Lamport logical clocks.
 
 `<entity-id>` is the 64-character lowercase hex SHA-256 ID of the entity (see [§7](#7-id-derivation)).
 
+### 2.1 Singleton entities
+
+An entity type may be a **singleton**: a repository holds at most one entity of that type.
+A singleton is stored in a reference named after a fixed key chosen by the entity type,
+instead of its ID:
+
+| Reference pattern                         | Meaning                          |
+|-------------------------------------------|----------------------------------|
+| `refs/<namespace>/<key>`                  | Local singleton entity           |
+| `refs/remotes/<remote>/<namespace>/<key>` | Remote-tracking singleton entity |
+
+Its ID is still the ID of its first operation ([§7](#7-id-derivation)), but is not checked
+against the reference name: the reference may hold any entity of that type. Any other
+reference in the namespace is not an entity, and a reader ignores it.
+
+Two singletons created independently have different root commits: they are different
+entities under the same reference, and are never merged (see scenario 5 of
+[§10](#10-merge-algorithm)).
+
 
 ## 3. Commit structure
 
@@ -175,7 +194,8 @@ IDs are specified in [ids.md](ids.md). In summary, for this layer:
 | Entity ID    | Operation ID of the first operation in the root pack                |
 
 A reader **must** reject an entity whose reference ID does not match the ID of the first
-operation in its root pack, or in which two operations share the same ID.
+operation in its root pack (except for a singleton, see [§2.1](#21-singleton-entities)), or
+in which two operations share the same ID.
 
 
 ## 8. Lamport clocks
@@ -221,17 +241,31 @@ by definition, so their relative order is arbitrary but must be stable.
 
 ## 10. Merge algorithm
 
-When fetching entity updates from a remote, a client applies one of five scenarios:
+When fetching entity updates from a remote, a client applies one of six scenarios:
 
-| Scenario        | Condition                                                  | Action                                |
-|-----------------|------------------------------------------------------------|---------------------------------------|
-| 1. New          | Entity does not exist locally                              | Copy the remote reference as-is       |
-| 2. Identical    | Local and remote tips are the same commit                  | No action                             |
-| 3. Local ahead  | Remote tip is an ancestor of local tip                     | No action                             |
-| 4. Fast-forward | Local tip is an ancestor of remote tip                     | Advance local reference to remote tip |
-| 5. Diverged     | Neither tip is an ancestor of the other (concurrent edits) | Create a merge commit                 |
+| Scenario             | Condition                                                  | Action                                |
+|----------------------|------------------------------------------------------------|---------------------------------------|
+| 1. New               | Entity does not exist locally                              | Copy the remote reference as-is       |
+| 2. Identical         | Local and remote tips are the same commit                  | No action                             |
+| 3. Local ahead       | Remote tip is an ancestor of local tip                     | No action                             |
+| 4. Fast-forward      | Local tip is an ancestor of remote tip                     | Advance local reference to remote tip |
+| 5. No common history | Local and remote have different root commits               | No action, report a conflict          |
+| 6. Diverged          | Neither tip is an ancestor of the other (concurrent edits) | Create a merge commit                 |
 
-**Scenario 5 in detail**: a new commit M is created with two parents (local tip and remote
+**Scenario 5 in detail**: joining two histories with different roots would give a DAG with
+two roots, which [§4](#4-dag-topology-constraints) rejects. Both histories descend from
+their single root, so they share a commit if and only if they share the root. For a regular
+entity, different roots under the same reference only come from corrupted or forged data,
+as the root determines the ID and so the reference. For a singleton
+([§2.1](#21-singleton-entities)), they are expected: two singletons created independently.
+The client changes nothing and reports the conflict; its resolution is left to the user.
+Pushing fails as well, as the remote only accepts fast-forward updates.
+
+Remote entities fetched via git land at `refs/remotes/<remote>/<namespace>/<id>` (or
+`<key>` for a singleton). After merging, the result is stored at `refs/<namespace>/<id>`
+(or `<key>`).
+
+**Scenario 6 in detail**: a new commit M is created with two parents (local tip and remote
 tip). Its `ops` blob contains an empty operation array. The commit is attributed to the
 local user performing the merge and is signed if the user has a signing key. Its
 `edit-clock` is the next value from the local edit clock.
@@ -242,10 +276,6 @@ already an ancestor of the merge commit and advances to it without creating anot
 of repos syncing in a cycle, each round of pulls can only reduce the number of unresolved
 divergences; eventually all repos fast-forward to the same tip. The DAG grows monotonically
 (git-bug only accepts fast-forward pushes), so a merged state can never be overwritten.
-
-Remote entities fetched via git land at `refs/remotes/<remote>/<namespace>/<id>`. After
-merging, the result is stored at `refs/<namespace>/<id>`.
-
 
 ## 11. Signing
 
@@ -275,6 +305,7 @@ A conforming **reader**:
 - Witnesses Lamport clock values ([§8](#8-lamport-clocks)).
 - Uses the clock-based operation ordering ([§9](#9-operation-ordering)).
 - Ignores entity namespaces it does not implement.
+- Never merges histories with different root commits ([§10](#10-merge-algorithm), scenario 5).
 
 A conforming **writer**:
 

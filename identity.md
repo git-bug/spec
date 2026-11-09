@@ -155,7 +155,7 @@ Minimal version (no keys, no bridge fields):
   "unix_time": 1609459200,
   "name": "Alice",
   "email": "alice@example.com",
-  "nonce": "rv5N8TwqB3sGKhBxVoNFPw=="
+  "nonce": "rv5N8TwqB3sGKhBxVoNFPwAAAAA="
 }
 ```
 
@@ -171,7 +171,7 @@ Version with a public key and a bridge login:
   "pub_keys": [
     "-----BEGIN PGP PUBLIC KEY BLOCK-----\n...\n-----END PGP PUBLIC KEY BLOCK-----\n"
   ],
-  "nonce": "9k3mP1QrX8aLuYoW5NcTzA=="
+  "nonce": "9k3mP1QrX8aLuYoW5NcTzAAAAAA="
 }
 ```
 
