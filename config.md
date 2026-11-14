@@ -259,35 +259,20 @@ Concurrent changes still resolve separately for each entry and field.
 
 ### 7.4 Ordered lists
 
-An ordered list is a map whose entries have a `position` field. The entries are listed by
-position, compared byte by byte. Entries with the same position are listed by key, and
-entries without a position come last, by key.
+An ordered list is a map whose entries have a `position` field, holding a position as
+specified in [positions.md](positions.md). The entries are listed by position. Entries with
+the same position are listed by key, and entries without a position come last, by key.
 
-A position is a fractional index, in the format described by David Greenspan in
-[Implementing Fractional Indexing](https://observablehq.com/@dgreensp/implementing-fractional-indexing).
-It is a string of the digits `0`–`9`, `A`–`Z` and `a`–`z`, whose order is also the order of
-their bytes, made of two parts:
-
-1. An integer part, whose first character, a letter, gives its length, that character
-   included: 2 for `a`, 3 for `b`, up to 27 for `z`, and 2 for `Z`, 3 for `Y`, up to 27 for
-   `A`. The lowercase letters start the integers from `a0` upward, the uppercase ones those
-   below it: `Zy`, `Zz`, `a0`, `a1`, …, `az`, `b00`, `b01`.
-2. A fractional part: the rest of the string, possibly empty, not ending with `0`.
-
-`A` followed by 26 `0`, with nothing after it, is not a position. A *set entry* that sets an
-invalid position is invalid ([§6](#6-common-fields)).
-
-There is always a position before another, after another, and between two different ones:
-`Zz` lies before `a0`, `a1` after `a0`, `a0V` between `a0` and `a1`, and `a0G` between `a0`
-and `a0V`. A client adding at either end can step the integer part (`a1`, `a2`, …), so that
-the positions stay short when entries are added one after another.
+A *set entry* that sets an invalid position ([positions.md §2](positions.md#2-format)) is
+invalid ([§6](#6-common-fields)).
 
 A client that adds an entry **must** give it a position. A client inserts or moves an entry
-by setting its `position`, and **must** set it between the positions of its new neighbours,
-or before the first or after the last entry, without changing any other entry. When no
-position lies between the new neighbours, because they have the same position or have none,
-the client **must** first move enough of the entries involved to new positions, in the same
-pack and keeping their order, so that one does.
+by setting its `position`, chosen as
+[positions.md §4](positions.md#4-choosing-a-position) requires: between the positions of
+its new neighbours, or before the first or after the last entry, without changing any other
+entry. When no position lies between the new neighbours, because they have the same
+position or have none, the client **must** first move enough of the entries involved to new
+positions, in the same pack and keeping their order, so that one does.
 
 For example, `x` is at `a0` and `y` at `a1`. Alice inserts `p` between them at `a0V`. Bob,
 offline, inserts `q` there as well, and also picks `a0V`. Once they sync, both have the same

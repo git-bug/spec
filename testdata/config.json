@@ -214,24 +214,7 @@
   },
 
   "ordered_list_examples": {
-    "description": "Positions of the entries of an ordered list. No setting is an ordered list yet: these examples apply to any.",
-    "valid_positions": [
-      {"position": "a0",  "note": "integer part a0, empty fractional part"},
-      {"position": "a0V", "note": "integer part a0, fractional part V"},
-      {"position": "Zz",  "note": "integer part Zz, the one just below a0"},
-      {"position": "b12", "note": "integer part b12: b gives a length of 3"},
-      {"position": "A000000000000000000000000001", "note": "the smallest integer part, with a fractional part"}
-    ],
-    "invalid_positions": [
-      {"position": "",     "note": "empty"},
-      {"position": "a",    "note": "a gives an integer part of 2 characters, only 1 is there"},
-      {"position": "b1",   "note": "b gives an integer part of 3 characters, only 2 are there"},
-      {"position": "a00",  "note": "the fractional part 0 ends with 0"},
-      {"position": "a0V0", "note": "the fractional part V0 ends with 0"},
-      {"position": "0a",   "note": "the first character is not a letter"},
-      {"position": "a0~",  "note": "~ is not a digit"},
-      {"position": "A00000000000000000000000000", "note": "A followed by 26 0, with nothing after it"}
-    ],
+    "description": "Order of the entries of an ordered list. No setting is an ordered list yet: these examples apply to any. Valid and invalid positions are in positions.json.",
     "sort_example": {
       "entries": [
         {"key": "q", "position": "a0V"},

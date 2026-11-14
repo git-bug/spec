@@ -134,12 +134,13 @@ in its root commit's operation pack (see [§7](#7-id-derivation)).
 Every operation is a JSON object. Its maps
 ([values.md §3](values.md#3-members-maps-and-null)) are `metadata`
 ([§6.1](#61-common-fields-present-in-every-operation)), `new_metadata`
-([§6.5](#65-setmetadataoperation-generic-pattern)) and `times`, in the entities that have it.
+([§6.6](#66-setmetadataoperation-generic-pattern)) and `times`, in the entities that have it.
 
 An operation of a known type that doesn't follow the specification of its entity is
 *invalid*: for example one without a required member, or with a value of the wrong type or
 outside what its member allows. An operation of an unknown type follows
-[§6.4](#64-unknown-operation-types), and a reader ignores the members it doesn't know.
+[§6.4](#64-unknown-operation-types), and a reader ignores the members it doesn't know
+([§6.5](#65-unknown-fields)).
 
 A client judges an operation when it takes it in, not each time it reads it:
 
@@ -200,7 +201,22 @@ A conforming reader **must** accept and preserve operation objects whose `type` 
 recognized. Unknown operations **must not** affect the snapshot state; they **must** be
 retained verbatim if the entity is subsequently written back.
 
-### 6.5 SetMetadataOperation (generic pattern)
+### 6.5 Unknown fields
+
+A conforming reader **must** accept an operation of a known type that carries JSON keys it
+does not recognize. It ignores these keys, whatever they hold, `null` included
+([values.md §3](values.md#3-members-maps-and-null)), and applies the operation from the
+fields it knows. The keys stay part of the operation: its ID covers them ([§6.2](#62-operation-id)),
+and they are retained verbatim with the rest of the pack.
+
+An operation type can therefore be given an optional field without a new format version.
+For a reader that ignores the field, the operation **must** keep its meaning without it: a
+reader that does not know why a bug was closed still reads that it was closed (see
+[bug.md §5.4](bug.md#54-setstatusoperation-type-4)). A field without which the operation
+cannot be understood belongs to a new operation type
+([§6.4](#64-unknown-operation-types)).
+
+### 6.6 SetMetadataOperation (generic pattern)
 
 `SetMetadataOperation` is a generic operation type defined in the DAG layer and usable by
 any entity. Its concrete `type` integer is assigned by each entity (see the entity-specific
@@ -219,12 +235,35 @@ a later `SetMetadataOperation`.
 Without `new_metadata`, the operation adds no metadata. Its keys and values follow the
 rules of `metadata` ([§6.1](#61-common-fields-present-in-every-operation)).
 
-### 6.6 NoOpOperation (generic pattern)
+### 6.7 NoOpOperation (generic pattern)
 
 `NoOpOperation` is a generic operation type defined in the DAG layer. It carries no
 entity-specific fields beyond the common ones and does not change the snapshot. It is used
 by bridges and other tools to store metadata in the history without affecting the entity
 state. Its concrete `type` integer is assigned by each entity.
+
+### 6.8 References to other entities
+
+An operation may refer to another entity: a board item to a bug, a bug to the bug it is part
+of. The reference is the full ID of the entity (see [ids.md](ids.md)), together with its
+namespace when the operation may refer to entities of several types.
+
+The entity referred to may be absent from the repository: not fetched yet, never pushed by
+its author, held by another repository, or of a type the client does not implement. A
+reference is therefore **soft**:
+
+- A reader **must** accept an operation whose reference does not resolve, and keeps the
+  reference in the snapshot.
+- A client shows such a reference as a placeholder, and resolves it once the entity is
+  present.
+
+The same holds for a reference to an identity, other than the author of a pack
+([§5](#5-operation-pack-blob)).
+
+Each entity is replayed on its own: its snapshot depends on its own operations, never on
+the entities it refers to. What follows from several entities, such as the children of a bug
+or a cycle of parents, is derived when reading, from the entities present, as each entity
+spec defines. It is never stored, and no operation is written for it.
 
 
 ## 7. ID derivation
@@ -352,6 +391,9 @@ A conforming **reader**:
 - Checks the format version before decoding and returns a clear error on mismatch.
 - Verifies commit signatures when the author has registered keys ([§11](#11-signing)).
 - Accepts and silently skips operation types it does not recognize ([§6.4](#64-unknown-operation-types)).
+- Accepts operations carrying fields it does not recognize, and ignores those fields
+  ([§6.5](#65-unknown-fields)).
+- Accepts references to entities that are absent ([§6.8](#68-references-to-other-entities)).
 - Witnesses Lamport clock values ([§8](#8-lamport-clocks)).
 - Uses the clock-based operation ordering ([§9](#9-operation-ordering)).
 - Ignores entity namespaces it does not implement.

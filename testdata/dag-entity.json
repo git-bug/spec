@@ -25,6 +25,12 @@
       "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"test bug\",\"message\":\"\",\"files\":null}]}",
       "note": "raw is input as written in git: compact JSON, with the keys in this order. expected_id is the SHA-256 of raw.",
       "expected_id": "e38873b1914f55f93b5c1bf7c90539ea309c8edfbd5cde159e5f07559da576f0"
+    },
+    {
+      "description": "Operation of a known type carrying a field that the reader does not know: a SetStatusOperation of a bug. The reader applies it from the fields it knows, and closes the bug. Its ID covers the unknown field.",
+      "raw": "{\"type\":4,\"timestamp\":1609473600,\"nonce\":\"EEEEEEEEEEEEEEEEEEEEEEEEEEEE\",\"status\":2,\"future_field\":\"some value\"}",
+      "note": "raw is the operation as written in git. expected_id is the SHA-256 of raw.",
+      "expected_id": "e8da4599d6cacecdc3143c0a2fa928bbee63737d21d87cfcfbe33d78a1a9e566"
     }
   ],
 
