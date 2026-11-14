@@ -1,0 +1,36 @@
+{
+  "_comment": "Test vectors for text. Each string is given as JSON, with escapes for the characters that matter. text and multiline_text tell whether it is text and multi-line text; blank, whether it is blank; length, its number of code points.",
+
+  "examples": [
+    {"string": "crash",                   "text": true,  "multiline_text": true,  "blank": false, "length": 5},
+    {"string": "",                        "text": true,  "multiline_text": true,  "blank": true,  "length": 0},
+    {"string": "   ",                     "text": true,  "multiline_text": true,  "blank": true,  "length": 3, "note": "spaces only"},
+    {"string": " 　",            "text": true,  "multiline_text": true,  "blank": true,  "length": 2, "note": "a no-break space and an ideographic space"},
+    {"string": "​",                  "text": true,  "multiline_text": true,  "blank": true,  "length": 1, "note": "a zero width space, of category Cf"},
+    {"string": "",                  "text": true,  "multiline_text": true,  "blank": true,  "length": 1, "note": "a private-use character, of category Co"},
+    {"string": " ",                  "text": true,  "multiline_text": true,  "blank": true,  "length": 1, "note": "a line separator is not a control character, so it is allowed; it is of category Zl"},
+    {"string": "a​b",                "text": true,  "multiline_text": true,  "blank": false, "length": 3},
+    {"string": "́",                  "text": true,  "multiline_text": true,  "blank": false, "length": 1, "note": "a combining mark alone, of category M"},
+    {"string": "épique",             "text": true,  "multiline_text": true,  "blank": false, "length": 6, "note": "é as U+00E9"},
+    {"string": "épique",            "text": true,  "multiline_text": true,  "blank": false, "length": 7, "note": "é as e followed by U+0301"},
+    {"string": "🐛",            "text": true,  "multiline_text": true,  "blank": false, "length": 1, "note": "U+1F41B, 4 bytes in UTF-8"},
+    {"string": "�",                  "text": true,  "multiline_text": true,  "blank": false, "length": 1, "note": "the replacement character, of category So"},
+    {"string": "͸",                  "text": true,  "multiline_text": true,  "blank": false, "length": 1, "note": "a code point unassigned in Unicode 17.0.0"},
+    {"string": "א‏",            "text": true,  "multiline_text": true,  "blank": false, "length": 2, "note": "a right-to-left mark is allowed"},
+    {"string": "a⁦b⁩",          "text": true,  "multiline_text": true,  "blank": false, "length": 4, "note": "a bidirectional isolate is allowed"},
+    {"string": "a\tb",                    "text": false, "multiline_text": true,  "blank": false, "length": 3},
+    {"string": "a\nb",                    "text": false, "multiline_text": true,  "blank": false, "length": 3},
+    {"string": "a\r\nb",                  "text": false, "multiline_text": true,  "blank": false, "length": 4},
+    {"string": "\n\t ",                   "text": false, "multiline_text": true,  "blank": true,  "length": 3},
+    {"string": "a\u000bb",                "text": false, "multiline_text": false, "blank": false, "length": 3, "note": "a vertical tab, a control character"},
+    {"string": "a\u0000b",                "text": false, "multiline_text": false, "blank": false, "length": 3},
+    {"string": "a\u007fb",                "text": false, "multiline_text": false, "blank": false, "length": 3, "note": "DEL"},
+    {"string": "a\u0085b",                "text": false, "multiline_text": false, "blank": false, "length": 3, "note": "a next line, a control character"},
+    {"string": "a‪b",                "text": false, "multiline_text": false, "blank": false, "length": 3, "note": "a left-to-right embedding"},
+    {"string": "a‮b",                "text": false, "multiline_text": false, "blank": false, "length": 3, "note": "a right-to-left override"},
+    {"string": "a﷐b",                "text": false, "multiline_text": false, "blank": false, "length": 3, "note": "a noncharacter"},
+    {"string": "a￾b",                "text": false, "multiline_text": false, "blank": false, "length": 3, "note": "a noncharacter, the last but one code point of plane 0"},
+    {"string": "a🿾",           "text": false, "multiline_text": false, "blank": false, "length": 2, "note": "U+1FFFE, a noncharacter"},
+    {"string": "a􏿿",           "text": false, "multiline_text": false, "blank": false, "length": 2, "note": "U+10FFFF, a noncharacter"}
+  ]
+}

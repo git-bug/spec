@@ -50,9 +50,9 @@ Each `version` blob is a JSON object with the following fields:
 | Field          | JSON key     | Type                    | Required | Description                                                                                                 |
 |----------------|--------------|-------------------------|----------|-------------------------------------------------------------------------------------------------------------|
 | Format version | `version`    | integer                 | yes      | Must equal 2                                                                                                |
-| Name           | `name`       | string                  | no       | Display name of the user                                                                                    |
-| Email          | `email`      | string                  | no       | Email address (from git config or bridge)                                                                   |
-| Login          | `login`      | string                  | no       | Username from a bridge (e.g. GitHub login)                                                                  |
+| Name           | `name`       | string                  | no       | Display name of the user; text                                                                              |
+| Email          | `email`      | string                  | no       | Email address (from git config or bridge); text                                                             |
+| Login          | `login`      | string                  | no       | Username from a bridge (e.g. GitHub login); text                                                            |
 | Avatar URL     | `avatar_url` | string                  | no       | URL to a profile picture                                                                                    |
 | Public keys    | `pub_keys`   | array of key objects    | no       | PGP public keys valid from this version onward                                                              |
 | Lamport times  | `times`      | object (string→integer) | yes      | Snapshot of all known clock values at the time this version was created (see [§4.1](#41-lamport-times-map)) |
@@ -61,6 +61,9 @@ Each `version` blob is a JSON object with the following fields:
 | Metadata       | `metadata`   | object (string→string)  | no       | Arbitrary key/value pairs                                                                                   |
 
 A reader **must** reject a version whose `version` field does not equal 2.
+
+`name`, `email` and `login` are text (see [text.md](text.md)), and `name` and `login` are
+not both blank.
 
 ### 4.1 Lamport times map
 

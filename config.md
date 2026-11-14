@@ -168,9 +168,9 @@ A value is a string, an integer or a boolean:
 | Boolean | `true` or `false`                    | `false`    |
 
 An integer lies between −(2⁵³ − 1) and 2⁵³ − 1, so that every JSON implementation reads it
-exactly. Each setting narrows its keys and the type of its values further, for example to a
-single line, a maximum length, a fixed set of strings or a range of integers. A length is a
-number of characters, counted as Unicode code points, not as bytes.
+exactly. Each setting narrows its keys and the type of its values further, for example to
+text ([text.md](text.md)), a maximum length, a fixed set of strings or a range of integers.
+A length is a number of code points, not of bytes ([text.md §5](text.md#5-length)).
 
 There are no other values: no `null`, which clears a field ([§7.2](#72-operations)), no
 objects or arrays, and no fractional numbers. Anything structured is a map, a set or an
@@ -416,19 +416,19 @@ as each setting defines ([§9](#9-settings)). The operation and its entity stay 
 
 ### 9.1 Repository description
 
-Register, changed by type 10001 (*set value*). The value is a single line of printable
-text, of at most 256 characters.
+Register, changed by type 10001 (*set value*). The value is text ([text.md](text.md)) of
+at most 256 characters.
 
 ### 9.2 Label definitions
 
-Map, keyed by label name: non-empty, single line, at most 64 characters. Changed by type
-20001 (*set entry*), which defines a label or changes its definition, and type 20002
-(*remove entry*), which removes the definition.
+Map, keyed by label name: text that is not blank ([text.md](text.md)), of at most 64
+characters. Changed by type 20001 (*set entry*), which defines a label or changes its
+definition, and type 20002 (*remove entry*), which removes the definition.
 
 | Field         | Value                                          | Default                                    |
 |---------------|------------------------------------------------|--------------------------------------------|
 | `color`       | `#` and six lowercase hex digits (`#rrggbb`)   | The color derived from the name, see below |
-| `description` | Non-empty, single line, at most 256 characters | None                                       |
+| `description` | Text, not blank, of at most 256 characters     | None                                       |
 
 A label does not need a definition to be used on a bug, and defining a label does not allow
 it ([§9.3](#93-allowed-labels)). A bug may have a label longer than 64 characters, which
@@ -468,9 +468,9 @@ For example, the SHA-256 of `crash` adds up to 5194, which is 7 modulo 19: `cras
 
 ### 9.3 Allowed labels
 
-Set, keyed by label name: non-empty, single line, at most 64 characters. Changed by type
-20003 (*set entry*), which allows a label, and type 20004 (*remove entry*), which disallows
-it.
+Set, keyed by label name: text that is not blank ([text.md](text.md)), of at most 64
+characters. Changed by type 20003 (*set entry*), which allows a label, and type 20004
+(*remove entry*), which disallows it.
 
 While no label is allowed, any label may be used. Once at least one label is allowed, only
 the allowed labels may be used. Disallowing a label keeps its definition, so that bugs that
