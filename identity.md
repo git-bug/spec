@@ -180,6 +180,9 @@ Version with a public key and a bridge login:
 
 Fields absent from the JSON (`login`, `avatar_url`, `pub_keys`, `metadata`) are omitted
 when empty (`omitempty`). A reader must treat missing optional fields as empty/zero values.
+As in operations, a member that is `null` reads as absent, a value that is `null` in
+`metadata` or `times` reads as the empty string or 0, and a writer never writes `null` (see
+[dag-entity.md §6](dag-entity.md#6-operations)).
 
 
 ## 5. ID derivation

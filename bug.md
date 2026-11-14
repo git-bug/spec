@@ -61,8 +61,8 @@ Creates the bug. The ID of this operation becomes the bug's ID.
 | Field   | JSON key  | Type                      | Required | Description                                        |
 |---------|-----------|---------------------------|----------|----------------------------------------------------|
 | Title   | `title`   | string                    | yes      | Bug title; text, not blank                         |
-| Message | `message` | string                    | yes      | Opening comment; multi-line text, may be blank     |
-| Files   | `files`   | array of git hash strings | yes      | Blobs referenced in `message`; empty array if none |
+| Message | `message` | string                    | no       | Opening comment; multi-line text; empty if absent  |
+| Files   | `files`   | array of git hash strings | no       | Blobs referenced in `message`; none if absent      |
 
 **Apply**: initializes all snapshot fields. Sets the bug ID (equal to this operation's ID),
 the author, the title, and the first comment. The opening comment is identified by this
@@ -88,7 +88,7 @@ Changes the bug title.
 | Field          | JSON key | Type   | Required | Description                                           |
 |----------------|----------|--------|----------|-------------------------------------------------------|
 | New title      | `title`  | string | yes      | The new title; text, not blank                        |
-| Previous title | `was`    | string | yes      | The title before this change, for display; text       |
+| Previous title | `was`    | string | no       | Title before the change; text; empty if absent        |
 
 **Apply**: replaces the snapshot title unconditionally. **Last-write-wins**: two concurrent
 title changes are resolved by the total operation order (§9 of the DAG spec) — the one that
@@ -112,8 +112,8 @@ Adds a comment to the bug thread.
 
 | Field   | JSON key  | Type                      | Required | Description                                        |
 |---------|-----------|---------------------------|----------|----------------------------------------------------|
-| Message | `message` | string                    | yes      | Comment body; multi-line text, may be blank        |
-| Files   | `files`   | array of git hash strings | yes      | Blobs referenced in `message`; empty array if none |
+| Message | `message` | string                    | no       | Comment body; multi-line text; empty if absent     |
+| Files   | `files`   | array of git hash strings | no       | Blobs referenced in `message`; none if absent      |
 
 **Apply**: appends a new comment to the snapshot's comment list. The comment is identified
 by this operation's ID; its combined ID (see [ids.md](ids.md#5-combined-ids)) is
@@ -157,10 +157,10 @@ Example:
 
 Adds and/or removes labels. A label is text that is not blank, of any length.
 
-| Field          | JSON key  | Type             | Required | Description                    |
-|----------------|-----------|------------------|----------|--------------------------------|
-| Added labels   | `added`   | array of strings | yes      | Labels to add; may be empty    |
-| Removed labels | `removed` | array of strings | yes      | Labels to remove; may be empty |
+| Field          | JSON key  | Type             | Required | Description                      |
+|----------------|-----------|------------------|----------|----------------------------------|
+| Added labels   | `added`   | array of strings | no       | Labels to add; none if absent    |
+| Removed labels | `removed` | array of strings | no       | Labels to remove; none if absent |
 
 At least one of `added` or `removed` must be non-empty.
 
@@ -191,8 +191,8 @@ Edits the body of an existing comment (including the opening comment created by
 | Field   | JSON key  | Type                      | Required | Description                                                |
 |---------|-----------|---------------------------|----------|------------------------------------------------------------|
 | Target  | `target`  | 64-char hex string        | yes      | ID of the operation that originally created the comment    |
-| Message | `message` | string                    | yes      | New comment body; multi-line text, may be blank            |
-| Files   | `files`   | array of git hash strings | yes      | Blobs referenced in the new `message`; empty array if none |
+| Message | `message` | string                    | no       | New comment body; multi-line text; empty if absent         |
+| Files   | `files`   | array of git hash strings | no       | Blobs referenced in the new `message`; none if absent      |
 
 **Apply**: locates the comment whose creating operation ID matches `target` and scans the
 timeline. If not found, the operation is a silent no-op. If found, the
@@ -235,7 +235,7 @@ that arrives in operation order persists permanently and cannot be overridden.
 | Field        | JSON key       | Type                   | Required |
 |--------------|----------------|------------------------|----------|
 | Target       | `target`       | 64-char hex string     | yes      |
-| New metadata | `new_metadata` | object (string→string) | yes      |
+| New metadata | `new_metadata` | object (string→string) | no       |
 
 
 ## 6. Operation metadata

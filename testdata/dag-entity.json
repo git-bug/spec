@@ -1,5 +1,5 @@
 {
-  "_comment": "Test vectors for the DAG entity format. IDs are computed by the reference implementation (Go encoding/json + crypto/sha256). Git object hashes are the ones of a SHA-1 repository.",
+  "_comment": "Test vectors for the DAG entity format. IDs are computed by the reference implementation (Go encoding/json + crypto/sha256). Git object hashes are the ones of a SHA-1 repository. Some operations hold \"files\": null, which reads as absent: no file (dag-entity.md §6).",
 
   "id_derivation": [
     {

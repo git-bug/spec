@@ -121,6 +121,17 @@ in its root commit's operation pack (see [§7](#7-id-derivation)).
 
 ## 6. Operations
 
+Every operation is a JSON object. A member that is `null`, in an operation or in an object
+it holds, reads as if it were absent. Each operation type defines what the absence of each
+of its members means: a default value, a value left as it is, or an invalid operation when
+the member is required. An object that maps keys to values, such as `metadata` or `times`,
+is the exception: a value that is `null` in it reads as the empty value of its type, the
+empty string or 0, and its key stays. `null` therefore never carries a meaning of its own,
+and a writer never writes it: it leaves the member out, or writes the empty value in a map.
+
+An element of an array is never `null`: an operation of a known type holding one is invalid.
+An operation of an unknown type is preserved as it is ([§6.4](#64-unknown-operation-types)).
+
 ### 6.1 Common fields (present in every operation)
 
 Every operation is a JSON object with the following fields:
@@ -173,7 +184,9 @@ a later `SetMetadataOperation`.
 |---------------------|----------------|------------------------|----------|
 | (common fields)     | —              | —                      | yes      |
 | Target operation ID | `target`       | 64-char hex string     | yes      |
-| Metadata to add     | `new_metadata` | object (string→string) | yes      |
+| Metadata to add     | `new_metadata` | object (string→string) | no       |
+
+Without `new_metadata`, the operation adds no metadata.
 
 ### 6.6 NoOpOperation (generic pattern)
 
@@ -306,10 +319,12 @@ A conforming **reader**:
 - Uses the clock-based operation ordering ([§9](#9-operation-ordering)).
 - Ignores entity namespaces it does not implement.
 - Never merges histories with different root commits ([§10](#10-merge-algorithm), scenario 5).
+- Reads a member that is `null` as absent ([§6](#6-operations)).
 
 A conforming **writer**:
 
 - Sets a nonce of 20–64 random bytes in every operation.
+- Leaves a member out instead of writing it `null` ([§6](#6-operations)).
 - Encodes clock values in tree entry names pointing to the empty blob.
 - Signs commits when the author has a registered key.
 - Does not modify or discard operation packs it does not understand.
