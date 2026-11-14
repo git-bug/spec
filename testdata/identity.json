@@ -1,10 +1,9 @@
 {
-  "_comment": "Test vectors for the identity format. Hash values are computed by the reference implementation (Go encoding/json + crypto/sha256). Run 'go test ./doc/spec/...' to verify.",
+  "_comment": "Test vectors for the identity format. IDs are computed by the reference implementation (Go encoding/json + crypto/sha256). Git object hashes are the ones of a SHA-1 repository.",
 
   "id_derivation": [
     {
       "description": "Identity ID is the SHA-256 of the exact bytes of the first version blob.",
-      "note": "The expected_id depends on the exact bytes produced by Go's json.Marshal of the version struct, including format version=2, all fields, and the nonce. Fill in by running the reference implementation.",
       "first_version_input": {
         "version": 2,
         "times": {"bugs-create": 0, "bugs-edit": 0},
@@ -13,19 +12,21 @@
         "email": "alice@example.com",
         "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       },
-      "expected_id": "<run: go test ./doc/spec/... -run TestVectors to generate>"
+      "raw": "{\"version\":2,\"times\":{\"bugs-create\":0,\"bugs-edit\":0},\"unix_time\":1609459200,\"name\":\"Alice\",\"email\":\"alice@example.com\",\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\"}",
+      "note": "raw is first_version_input as written in git: compact JSON, with the keys in this order. expected_id is the SHA-256 of raw.",
+      "expected_id": "63f11b2fffac2a312850b87431cb37e1f2f423b61ef64df49ac46524cbc512b3"
     }
   ],
 
   "tree_entries": [
     {
-      "description": "Git tree for any identity commit (all versions use the same structure)",
+      "description": "Git tree of the commit of the first version in id_derivation (all versions use the same structure)",
       "entries": [
-        {"name": "version", "type": "blob", "hash": "<sha256 of the version JSON blob>"}
+        {"name": "version", "type": "blob", "hash": "11d56ac1260421a66d9592ce56a6dd2861000834"}
       ],
       "notes": [
         "Exactly one entry named 'version'. No clock entries, no extra subtree.",
-        "The blob hash is the SHA-256 of the version JSON bytes (this is also the version's ID)."
+        "The blob hash is the git object hash of the version JSON bytes, not the version's ID: the ID is the SHA-256 of these bytes alone."
       ]
     }
   ],

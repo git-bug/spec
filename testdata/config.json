@@ -1,0 +1,268 @@
+{
+  "_comment": "Test vectors for the config entity format. IDs are computed by the reference implementation (Go encoding/json + crypto/sha256). Git object hashes are the ones of a SHA-1 repository.",
+
+  "reference": {
+    "description": "The config is a singleton: its reference is named after the fixed key 'config', not after its ID.",
+    "local": "refs/config/config",
+    "remote_tracking": "refs/remotes/<remote>/config/config"
+  },
+
+  "operation_pack_examples": [
+    {
+      "description": "First pack: the CreateOperation, which sets nothing",
+      "tree_entries": [
+        {"name": "create-clock-1", "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"},
+        {"name": "edit-clock-1",   "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"},
+        {"name": "ops",            "type": "blob", "hash": "cc9e75dd5e2f011c65fd342e6b4f115d47dc6778"},
+        {"name": "version-1",      "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"}
+      ],
+      "ops_blob": {
+        "author": {"id": "b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7"},
+        "ops": [
+          {
+            "type": 1,
+            "timestamp": 1609459200,
+            "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "times": {"bugs-create": 14, "bugs-edit": 137}
+          }
+        ]
+      },
+      "note": "The config ID equals the ID of this CreateOperation: hex(sha256(raw bytes of ops[0]))."
+    },
+    {
+      "description": "Second pack: set the repository description, then define and allow a label, in one edit session",
+      "tree_entries": [
+        {"name": "edit-clock-2", "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"},
+        {"name": "ops",          "type": "blob", "hash": "81ded0b2a1051f0fdcf6a9fd4327e64a536d4d1f"},
+        {"name": "version-1",    "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"}
+      ],
+      "ops_blob": {
+        "author": {"id": "b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7"},
+        "ops": [
+          {
+            "type": 10001,
+            "timestamp": 1609462800,
+            "nonce": "BBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "times": {"bugs-create": 14, "bugs-edit": 137, "config-create": 1, "config-edit": 1},
+            "value": "A distributed bug tracker embedded in git."
+          },
+          {
+            "type": 20001,
+            "timestamp": 1609462800,
+            "nonce": "CCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+            "times": {"bugs-create": 14, "bugs-edit": 137, "config-create": 1, "config-edit": 1},
+            "key": "crash",
+            "fields": {
+              "color": "#f44336",
+              "description": "The program terminates unexpectedly"
+            }
+          },
+          {
+            "type": 20003,
+            "timestamp": 1609462800,
+            "nonce": "DDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+            "times": {"bugs-create": 14, "bugs-edit": 137, "config-create": 1, "config-edit": 1},
+            "key": "crash"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Pack defining a label without color or description: fields is omitted",
+      "ops_blob": {
+        "author": {"id": "b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7"},
+        "ops": [
+          {
+            "type": 20001,
+            "timestamp": 1609466400,
+            "nonce": "EEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+            "times": {"bugs-create": 15, "bugs-edit": 140, "config-create": 1, "config-edit": 2},
+            "key": "regression"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Pack lifting the label restriction and cleaning up a definition: the definition of 'regression' is removed, 'crash' stays defined but is no longer allowed",
+      "ops_blob": {
+        "author": {"id": "b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7"},
+        "ops": [
+          {
+            "type": 20004,
+            "timestamp": 1609470000,
+            "nonce": "FFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+            "times": {"bugs-create": 15, "bugs-edit": 151, "config-create": 1, "config-edit": 3},
+            "key": "crash"
+          },
+          {
+            "type": 20002,
+            "timestamp": 1609470000,
+            "nonce": "GGGGGGGGGGGGGGGGGGGGGGGGGGGG",
+            "times": {"bugs-create": 15, "bugs-edit": 151, "config-create": 1, "config-edit": 3},
+            "key": "regression"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Pack changing only the color of 'crash': its description is unchanged",
+      "ops_blob": {
+        "author": {"id": "b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7"},
+        "ops": [
+          {
+            "type": 20001,
+            "timestamp": 1609473600,
+            "nonce": "HHHHHHHHHHHHHHHHHHHHHHHHHHHH",
+            "times": {"bugs-create": 15, "bugs-edit": 155, "config-create": 1, "config-edit": 4},
+            "key": "crash",
+            "fields": {"color": "#ff9800"}
+          }
+        ]
+      }
+    },
+    {
+      "description": "Pack clearing the description of 'crash': its color is unchanged",
+      "ops_blob": {
+        "author": {"id": "b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7"},
+        "ops": [
+          {
+            "type": 20001,
+            "timestamp": 1609477200,
+            "nonce": "IIIIIIIIIIIIIIIIIIIIIIIIIIII",
+            "times": {"bugs-create": 15, "bugs-edit": 160, "config-create": 1, "config-edit": 5},
+            "key": "crash",
+            "fields": {"description": null}
+          }
+        ]
+      }
+    }
+  ],
+
+  "snapshot_examples": [
+    {
+      "description": "After the first two packs",
+      "repo": {"description": "A distributed bug tracker embedded in git."},
+      "labels": {
+        "definitions": {
+          "crash": {"color": "#f44336", "description": "The program terminates unexpectedly"}
+        },
+        "allowed": ["crash"],
+        "note": "Only 'crash' may be used."
+      }
+    },
+    {
+      "description": "After the first four packs",
+      "repo": {"description": "A distributed bug tracker embedded in git."},
+      "labels": {
+        "definitions": {
+          "crash": {"color": "#f44336", "description": "The program terminates unexpectedly"}
+        },
+        "allowed": [],
+        "note": "No label is allowed: any label may be used. 'regression' has no definition, and takes the color derived from its name, #cddc39."
+      }
+    },
+    {
+      "description": "After the first five packs",
+      "repo": {"description": "A distributed bug tracker embedded in git."},
+      "labels": {
+        "definitions": {
+          "crash": {"color": "#ff9800", "description": "The program terminates unexpectedly"}
+        },
+        "allowed": [],
+        "note": "The fifth pack changed the color of 'crash' and left its description as it was."
+      }
+    },
+    {
+      "description": "After all six packs",
+      "repo": {"description": "A distributed bug tracker embedded in git."},
+      "labels": {
+        "definitions": {
+          "crash": {"color": "#ff9800"}
+        },
+        "allowed": [],
+        "note": "The sixth pack cleared the description of 'crash' and left its color as it was."
+      }
+    }
+  ],
+
+  "era_examples": {
+    "description": "The config judging an operation of another entity, by its time on the clock bugs-edit: the config operations whose times record a lower bugs-edit apply. The six packs above record bugs-edit 137, 137, 140, 151, 155 and 160.",
+    "clock": "bugs-edit",
+    "examples": [
+      {"times": [1, 137],   "applies": "none",                  "note": "Every setting reads as its default: any label may be used."},
+      {"times": [138, 140], "applies": "the first two packs",   "note": "As the first snapshot example: only 'crash' may be used."},
+      {"times": [141, 151], "applies": "the first three packs", "note": "'crash' and 'regression' are defined, only 'crash' may be used."},
+      {"times": [152, 155], "applies": "the first four packs",  "note": "As the second snapshot example."},
+      {"times": [156, 160], "applies": "the first five packs",  "note": "As the third snapshot example."},
+      {"times": [161],      "applies": "all six packs",         "note": "As the last snapshot example."}
+    ],
+    "note": "times lists the first and last time of each era, the last era having no end."
+  },
+
+  "derived_color_examples": {
+    "description": "The color of a label without one set: the palette entry at the index of the sum of the bytes of the SHA-256 of its name, modulo 19.",
+    "examples": [
+      {"name": "bug",         "byte_sum": 3513, "index": 17, "color": "#9e9e9e"},
+      {"name": "crash",       "byte_sum": 5194, "index": 7,  "color": "#00bcd4"},
+      {"name": "feature",     "byte_sum": 4239, "index": 2,  "color": "#9c27b0"},
+      {"name": "help wanted", "byte_sum": 5117, "index": 6,  "color": "#03a9f4"},
+      {"name": "regression",  "byte_sum": 4077, "index": 11, "color": "#cddc39"},
+      {"name": "wontfix",     "byte_sum": 4251, "index": 14, "color": "#ff9800"},
+      {"name": "épique",      "byte_sum": 3830, "index": 11, "color": "#cddc39"}
+    ],
+    "note": "'épique' is hashed as its UTF-8 bytes."
+  },
+
+  "ordered_list_examples": {
+    "description": "Positions of the entries of an ordered list. No setting is an ordered list yet: these examples apply to any.",
+    "valid_positions": [
+      {"position": "a0",  "note": "integer part a0, empty fractional part"},
+      {"position": "a0V", "note": "integer part a0, fractional part V"},
+      {"position": "Zz",  "note": "integer part Zz, the one just below a0"},
+      {"position": "b12", "note": "integer part b12: b gives a length of 3"},
+      {"position": "A000000000000000000000000001", "note": "the smallest integer part, with a fractional part"}
+    ],
+    "invalid_positions": [
+      {"position": "",     "note": "empty"},
+      {"position": "a",    "note": "a gives an integer part of 2 characters, only 1 is there"},
+      {"position": "b1",   "note": "b gives an integer part of 3 characters, only 2 are there"},
+      {"position": "a00",  "note": "the fractional part 0 ends with 0"},
+      {"position": "a0V0", "note": "the fractional part V0 ends with 0"},
+      {"position": "0a",   "note": "the first character is not a letter"},
+      {"position": "a0~",  "note": "~ is not a digit"},
+      {"position": "A00000000000000000000000000", "note": "A followed by 26 0, with nothing after it"}
+    ],
+    "sort_example": {
+      "entries": [
+        {"key": "q", "position": "a0V"},
+        {"key": "y", "position": "a1"},
+        {"key": "n"},
+        {"key": "x", "position": "a0"},
+        {"key": "p", "position": "a0V"},
+        {"key": "w", "position": "Zz"},
+        {"key": "m"}
+      ],
+      "order": ["w", "x", "p", "q", "y", "m", "n"],
+      "note": "By position, compared byte by byte; p and q share a position and are listed by key; m and n have no position and come last, by key."
+    },
+    "tie_example": {
+      "description": "Alice and Bob concurrently insert p and q between x (a0) and y (a1), and both pick a0V. Carol then inserts r between p and q: as no position lies between theirs, her pack first moves q.",
+      "before": {"order": ["x", "p", "q", "y"], "positions": {"x": "a0", "p": "a0V", "q": "a0V", "y": "a1"}},
+      "pack": [
+        {"key": "q", "fields": {"position": "a0l"}, "note": "move q between p (a0V) and y (a1)"},
+        {"key": "r", "fields": {"position": "a0d"}, "note": "insert r between p (a0V) and q (a0l)"}
+      ],
+      "after": {"order": ["x", "p", "r", "q", "y"], "positions": {"x": "a0", "p": "a0V", "r": "a0d", "q": "a0l", "y": "a1"}},
+      "note": "a0l and a0d are what Greenspan's midpoint gives; any position between the neighbours is as valid."
+    }
+  },
+
+  "id_derivation": [
+    {
+      "description": "Config ID equals the ID of its CreateOperation: hex(sha256(raw bytes of ops[0])) in the first pack.",
+      "raw": "{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"times\":{\"bugs-create\":14,\"bugs-edit\":137}}",
+      "note": "raw is ops[0] of the first pack as written in git: compact JSON, with the keys in this order. expected_id is the SHA-256 of raw.",
+      "expected_id": "42402fddf9ec048fe8d5f4acc6fc085b26e7e3a40a2fca88c8906765878119ee"
+    }
+  ]
+}

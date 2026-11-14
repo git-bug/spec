@@ -73,7 +73,7 @@ Example:
 {
   "type": 1,
   "timestamp": 1609459200,
-  "nonce": "rv5N8TwqB3sGKhBxVoNFPw==",
+  "nonce": "rv5N8TwqB3sGKhBxVoNFPwAAAAA=",
   "title": "segfault on empty input",
   "message": "Running `./app` with no arguments crashes.",
   "files": []
@@ -99,7 +99,7 @@ Example:
 {
   "type": 2,
   "timestamp": 1609462800,
-  "nonce": "9k3mP1QrX8aLuYoW5NcTzA==",
+  "nonce": "9k3mP1QrX8aLuYoW5NcTzAAAAAA=",
   "title": "segfault on empty input in parser",
   "was": "segfault on empty input"
 }
@@ -125,7 +125,7 @@ Example:
 {
   "type": 3,
   "timestamp": 1609466400,
-  "nonce": "hWqB2nK7sLmXpTrY4NcVzE==",
+  "nonce": "hWqB2nK7sLmXpTrY4NcVzEAAAAA=",
   "message": "Reproduced on version 1.2.3.",
   "files": []
 }
@@ -147,7 +147,7 @@ Example:
 {
   "type": 4,
   "timestamp": 1609470000,
-  "nonce": "dPx3oR8mN2bQcFyV6LtUwA==",
+  "nonce": "dPx3oR8mN2bQcFyV6LtUwAAAAAA=",
   "status": 2
 }
 ```
@@ -167,14 +167,16 @@ At least one of `added` or `removed` must be non-empty.
 removes each label in `removed` if present (both are idempotent). The set is sorted
 lexicographically after each update. **Set semantics with last-write-wins conflict
 resolution per label**: if two concurrent operations add and remove the same label, the one
-that sorts last in the total operation order determines the final state.
+that sorts last in the total operation order determines the final state. A label in `added`
+that the repository config doesn't allow at the time of the operation is not added (see
+[config.md §9.3](config.md#93-allowed-labels)).
 
 Example:
 ```json
 {
   "type": 5,
   "timestamp": 1609473600,
-  "nonce": "eQw4pT9nL3mKbVxR7UcFyZ==",
+  "nonce": "eQw4pT9nL3mKbVxR7UcFyZAAAAA=",
   "added": ["bug", "crash"],
   "removed": []
 }
@@ -204,7 +206,7 @@ Example:
 {
   "type": 6,
   "timestamp": 1609477200,
-  "nonce": "fRv5qX8oM4nLaWyT2UbFzK==",
+  "nonce": "fRv5qX8oM4nLaWyT2UbFzKAAAAA=",
   "target": "a3b4c5d6e7f8a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a1b2c3d4e5f6a7b8",
   "message": "Reproduced on versions 1.2.3 and 1.2.4.",
   "files": []

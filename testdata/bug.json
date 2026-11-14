@@ -1,5 +1,5 @@
 {
-  "_comment": "Test vectors for the bug entity format. Hash values are computed by the reference implementation (Go encoding/json + crypto/sha256). Run 'go test ./doc/spec/...' to verify.",
+  "_comment": "Test vectors for the bug entity format. IDs are computed by the reference implementation (Go encoding/json + crypto/sha256). Git object hashes are the ones of a SHA-1 repository.",
 
   "operation_pack_examples": [
     {
@@ -7,7 +7,7 @@
       "tree_entries": [
         {"name": "create-clock-1", "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"},
         {"name": "edit-clock-1",   "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"},
-        {"name": "ops",            "type": "blob", "hash": "<sha256 of the ops JSON blob>"},
+        {"name": "ops",            "type": "blob", "hash": "e82bad26308c548786324385643c8c9733aa9930"},
         {"name": "version-4",      "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"}
       ],
       "ops_blob": {
@@ -29,7 +29,7 @@
       "description": "Second pack: AddCommentOperation + LabelChangeOperation in one edit session",
       "tree_entries": [
         {"name": "edit-clock-2", "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"},
-        {"name": "ops",         "type": "blob", "hash": "<sha256 of the ops JSON blob>"},
+        {"name": "ops",         "type": "blob", "hash": "3bc175ad74851f9c2a072e79339414fa0d63d111"},
         {"name": "version-4",   "type": "blob", "hash": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"}
       ],
       "ops_blob": {
@@ -90,7 +90,7 @@
             "type": 6,
             "timestamp": 1609477200,
             "nonce": "FFFFFFFFFFFFFFFFFFFFFFFFFFFF",
-            "target": "<ID of the CreateOperation>",
+            "target": "ad3fe2d371f680ae2b9d012631fe2602ebf99efedcb8fdca7a926d65ba85056e",
             "message": "Running `./app` with no arguments crashes. Tested on Linux and macOS.",
             "files": null
           }
@@ -106,10 +106,10 @@
             "type": 8,
             "timestamp": 1609480800,
             "nonce": "GGGGGGGGGGGGGGGGGGGGGGGGGGGG",
-            "target": "<ID of the CreateOperation>",
+            "target": "ad3fe2d371f680ae2b9d012631fe2602ebf99efedcb8fdca7a926d65ba85056e",
             "new_metadata": {
-              "github-url": "https://github.com/example/repo/issues/42",
-              "github-id": "42"
+              "github-id": "42",
+              "github-url": "https://github.com/example/repo/issues/42"
             }
           }
         ]
@@ -120,7 +120,9 @@
   "id_derivation": [
     {
       "description": "Bug ID equals the ID of its CreateOperation: hex(sha256(raw bytes of ops[0])) in the first pack.",
-      "note": "Fill in expected_id by running the reference implementation against the first ops_blob example above."
+      "raw": "{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"segfault on empty input\",\"message\":\"Running `./app` with no arguments crashes.\",\"files\":null}",
+      "note": "raw is ops[0] of the first pack as written in git: compact JSON, with the keys in this order. expected_id is the SHA-256 of raw, and the 'target' of the operations targeting the opening comment.",
+      "expected_id": "ad3fe2d371f680ae2b9d012631fe2602ebf99efedcb8fdca7a926d65ba85056e"
     }
   ]
 }

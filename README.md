@@ -12,6 +12,7 @@ pull-requests, …) and identities inside a git repository.
 | [DAG entity format](dag-entity.md) | Base layer for all entities: commits, tree layout, operation packs, clocks, ordering, merge, signing |
 | [Identity format](identity.md)     | User identities: linear version chain, public keys, fast-forward merge                               |
 | [Bug entity](bug.md)               | The `bug` entity: operation types and snapshot semantics                                             |
+| [Config entity](config.md)         | The `config` entity: repository settings shared by every clone, a singleton                          |
 
 Each entity type gets its own spec, following the structure of `bug.md`.
 

@@ -38,13 +38,14 @@ An operation ID covers all its fields, including inline `metadata`.
 
 ## 3. Where IDs appear
 
-| Location                     | ID kind      | Reader check                                                           |
-|------------------------------|--------------|------------------------------------------------------------------------|
-| `refs/<namespace>/<id>`      | Entity ID    | **Must** match the first operation's ID, else reject                   |
-| `refs/identities/<id>`       | Identity ID  | **Must** match the first version's hash, else reject                   |
-| `author.id` in an `ops` blob | Identity ID  | **Must** resolve to a known identity                                   |
-| `target` of an operation     | Operation ID | Defined by the entity spec                                             |
-| Operation ordering tie-break | Pack ID      | Lexicographic ([dag-entity.md §9](dag-entity.md#9-operation-ordering)) |
+| Location                     | ID kind      | Reader check                                                                                                  |
+|------------------------------|--------------|---------------------------------------------------------------------------------------------------------------|
+| `refs/<namespace>/<id>`      | Entity ID    | **Must** match the first operation's ID, else reject                                                          |
+| `refs/<namespace>/<key>`     | —            | A singleton, named after a fixed key: no check ([dag-entity.md §2.1](dag-entity.md#21-singleton-entities)) |
+| `refs/identities/<id>`       | Identity ID  | **Must** match the first version's hash, else reject                                                          |
+| `author.id` in an `ops` blob | Identity ID  | **Must** resolve to a known identity                                                                          |
+| `target` of an operation     | Operation ID | Defined by the entity spec                                                                                    |
+| Operation ordering tie-break | Pack ID      | Lexicographic ([dag-entity.md §9](dag-entity.md#9-operation-ordering))                                        |
 
 Operation IDs **must** be unique within an entity; a reader **must** reject an entity with
 duplicates.
