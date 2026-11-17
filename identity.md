@@ -53,7 +53,7 @@ Each `version` blob is a JSON object with the following fields:
 | Name           | `name`       | string                  | no       | Display name of the user; text                                                                              |
 | Email          | `email`      | string                  | no       | Email address (from git config or bridge); text                                                             |
 | Login          | `login`      | string                  | no       | Username from a bridge (e.g. GitHub login); text                                                            |
-| Avatar URL     | `avatar_url` | string                  | no       | URL to a profile picture                                                                                    |
+| Avatar URL     | `avatar_url` | string                  | no       | URL to a profile picture; text                                                                              |
 | Public keys    | `pub_keys`   | array of key objects    | no       | PGP public keys valid from this version onward                                                              |
 | Lamport times  | `times`      | object (string→integer) | yes      | Snapshot of all known clock values at the time this version was created (see [§4.1](#41-lamport-times-map)) |
 | Unix timestamp | `unix_time`  | integer                 | yes      | Wall-clock time of version creation (seconds since epoch)                                                   |
@@ -62,8 +62,9 @@ Each `version` blob is a JSON object with the following fields:
 
 A reader **must** reject a version whose `version` field does not equal 2.
 
-`name`, `email` and `login` are text (see [text.md](text.md)), and `name` and `login` are
-not both blank.
+`name`, `email`, `login` and `avatar_url` are text (see [text.md](text.md)), and `name` and
+`login` are not both blank. A client shows the picture of `avatar_url` when it can fetch it.
+In `metadata`, each key is text and each value multi-line text.
 
 ### 4.1 Lamport times map
 
@@ -182,7 +183,9 @@ Fields absent from the JSON (`login`, `avatar_url`, `pub_keys`, `metadata`) are 
 when empty (`omitempty`). A reader must treat missing optional fields as empty/zero values.
 As in operations, a member that is `null` reads as absent, a value that is `null` in
 `metadata` or `times` reads as the empty string or 0, and a writer never writes `null` (see
-[dag-entity.md §6](dag-entity.md#6-operations)).
+[dag-entity.md §6](dag-entity.md#6-operations)). The `version` blob follows the JSON rules
+of operation packs ([dag-entity.md §5](dag-entity.md#5-operation-pack-blob)): a reader
+**must** reject a version whose blob breaks them.
 
 
 ## 5. ID derivation

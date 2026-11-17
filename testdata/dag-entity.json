@@ -95,5 +95,24 @@
         "ops": []
       }
     }
-  ]
+  ],
+
+  "json_examples": {
+    "description": "ops blobs as a reader finds them in git (dag-entity.md §5). raw is the blob, given as a JSON string; raw_hex is the blob in hexadecimal, for the blobs that are not valid UTF-8. valid tells whether the blob follows the JSON rules: a reader must reject a pack whose blob breaks them.",
+    "examples": [
+      {"valid": true, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"test bug\"}]}", "note": "the reference: every rule followed"},
+      {"valid": true, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"bug \\ud83d\\udc1b\"}]}", "note": "an escaped surrogate pair: U+1F41B"},
+      {"valid": true, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"bug \ud83d\udc1b\"}]}", "note": "U+1F41B written in UTF-8"},
+      {"valid": false, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"a\\ud800b\"}]}", "note": "a high surrogate alone"},
+      {"valid": false, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"a\\udc00b\"}]}", "note": "a low surrogate alone"},
+      {"valid": false, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"a\\udc00\\ud800b\"}]}", "note": "a low surrogate before a high one"},
+      {"valid": false, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"test bug\",\"title\":\"other\"}]}", "note": "two members of the same name"},
+      {"valid": false, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"test bug\",\"title\":null}]}", "note": "two members of the same name, the second null"},
+      {"valid": false, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"test bug\",\"metadata\":{\"k\":\"a\",\"k\":\"b\"}}]}", "note": "two keys of the same name in a map"},
+      {"valid": true, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"test bug\",\"Title\":\"other\"}]}", "note": "Title is an unknown member: the title is test bug"},
+      {"valid": false, "raw_hex": "7b22617574686f72223a7b226964223a2262323962376232653061636230613931646366336336633964386535663461336232633164306539663861376236633564346533663261316230633964386537227d2c226f7073223a5b7b2274797065223a312c2274696d657374616d70223a313630393435393230302c226e6f6e6365223a2241414141414141414141414141414141414141414141414141414141222c227469746c65223a22617d5d7dff62227d5d7d", "note": "the byte FF, invalid in UTF-8"},
+      {"valid": false, "raw_hex": "7b22617574686f72223a7b226964223a2262323962376232653061636230613931646366336336633964386535663461336232633164306539663861376236633564346533663261316230633964386537227d2c226f7073223a5b7b2274797065223a312c2274696d657374616d70223a313630393435393230302c226e6f6e6365223a2241414141414141414141414141414141414141414141414141414141222c227469746c65223a22617d5d7dc0af62227d5d7d", "note": "an overlong encoding of /, invalid in UTF-8"},
+      {"valid": false, "raw_hex": "7b22617574686f72223a7b226964223a2262323962376232653061636230613931646366336336633964386535663461336232633164306539663861376236633564346533663261316230633964386537227d2c226f7073223a5b7b2274797065223a312c2274696d657374616d70223a313630393435393230302c226e6f6e6365223a2241414141414141414141414141414141414141414141414141414141222c227469746c65223a22617d5d7deda08062227d5d7d", "note": "U+D800 encoded in UTF-8, invalid in UTF-8"}
+    ]
+  }
 }

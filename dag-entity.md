@@ -106,6 +106,20 @@ The `ops` blob is a JSON object with the following top-level fields:
 The author's full data lives in the identity store (see the identity spec). The `id` here
 is a reference into that store.
 
+The `ops` blob is JSON ([RFC 8259](https://www.rfc-editor.org/rfc/rfc8259)) encoded in
+UTF-8, and every client must decode it the same way. A reader **must** reject a pack whose
+blob:
+
+- is not valid UTF-8;
+- holds an escaped surrogate, `\uD800` to `\uDFFF`, other than a high surrogate followed by
+  a low one;
+- holds an object with two members of the same name.
+
+Member names match exactly, case included: in a bug operation, `Title` is an unknown member.
+Many JSON decoders replace invalid UTF-8 or a lone surrogate with U+FFFD, keep the last of
+two members of the same name, or match names regardless of case, so a reader checks these
+rules on the blob itself.
+
 **All operations in a single pack share the same author.** A reader **must** reject a pack
 where any operation's author differs from the pack-level author.
 
@@ -124,10 +138,15 @@ in its root commit's operation pack (see [§7](#7-id-derivation)).
 Every operation is a JSON object. A member that is `null`, in an operation or in an object
 it holds, reads as if it were absent. Each operation type defines what the absence of each
 of its members means: a default value, a value left as it is, or an invalid operation when
-the member is required. An object that maps keys to values, such as `metadata` or `times`,
-is the exception: a value that is `null` in it reads as the empty value of its type, the
-empty string or 0, and its key stays. `null` therefore never carries a meaning of its own,
-and a writer never writes it: it leaves the member out, or writes the empty value in a map.
+the member is required.
+
+Three members are *maps*, whose keys are data: `metadata` ([§6.1](#61-common-fields-present-in-every-operation)),
+`new_metadata` ([§6.5](#65-setmetadataoperation-generic-pattern)) and `times`, in the
+entities that have it. A value that is `null` in a map reads as the empty value of its
+type, the empty string or 0, and its key stays. Every other object holds members.
+
+`null` therefore never carries a meaning of its own, and a writer never writes it: it leaves
+the member out, or writes the empty value in a map.
 
 An element of an array is never `null`: an operation of a known type holding one is invalid.
 An operation of an unknown type is preserved as it is ([§6.4](#64-unknown-operation-types)).
@@ -145,6 +164,8 @@ Every operation is a JSON object with the following fields:
 
 `author` and `id` are **not** stored in the operation JSON. The author comes from the
 enclosing pack; the ID is derived from the serialized bytes (see [§7](#7-id-derivation)).
+
+In `metadata`, each key is text and each value multi-line text (see [text.md](text.md)).
 
 A reader **must** treat the `timestamp` value as informational only — it is not verified and
 may be inaccurate.
@@ -186,7 +207,8 @@ a later `SetMetadataOperation`.
 | Target operation ID | `target`       | 64-char hex string     | yes      |
 | Metadata to add     | `new_metadata` | object (string→string) | no       |
 
-Without `new_metadata`, the operation adds no metadata.
+Without `new_metadata`, the operation adds no metadata. Its keys and values follow the
+rules of `metadata` ([§6.1](#61-common-fields-present-in-every-operation)).
 
 ### 6.6 NoOpOperation (generic pattern)
 
@@ -312,6 +334,7 @@ development.
 A conforming **reader**:
 
 - Validates the git tree structure and rejects entities that violate [§4](#4-dag-topology-constraints).
+- Rejects an `ops` blob that breaks the JSON rules of [§5](#5-operation-pack-blob).
 - Checks the format version before decoding and returns a clear error on mismatch.
 - Verifies commit signatures when the author has registered keys ([§11](#11-signing)).
 - Accepts and silently skips operation types it does not recognize ([§6.4](#64-unknown-operation-types)).

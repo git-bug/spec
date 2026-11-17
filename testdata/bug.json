@@ -117,6 +117,38 @@
     }
   ],
 
+  "validity_examples": {
+    "description": "Operations judged on their own (bug.md §5, dag-entity.md §6, text.md). Each one is completed with the common members below, except those it sets itself. A member that is null reads as absent.",
+    "common": {"timestamp": 1609459200, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAAA"},
+    "valid": [
+      {"op": {"type": 1, "title": "crash"}, "note": "message and files are omitted: an empty message, no file"},
+      {"op": {"type": 1, "title": "crash", "message": null, "files": null}, "note": "null reads as absent"},
+      {"op": {"type": 1, "title": "\u05d0 \u2067b\u2069"}, "note": "an isolate that is closed"},
+      {"op": {"type": 2, "title": "crash on start"}, "note": "was is omitted: empty"},
+      {"op": {"type": 3, "message": ""}, "note": "a comment may be blank"},
+      {"op": {"type": 3, "message": "line one\u2028line two"}, "note": "a comment is multi-line text: U+2028 is allowed"},
+      {"op": {"type": 5, "added": ["bug"]}, "note": "removed is omitted: no label removed"},
+      {"op": {"type": 1, "title": "crash", "metadata": {"github-id": "I_1", "note": "a\nb"}}, "note": "a metadata value is multi-line text"},
+      {"op": {"type": 8, "target": "ad3fe2d371f680ae2b9d012631fe2602ebf99efedcb8fdca7a926d65ba85056e", "new_metadata": {"github-id": null}}, "note": "a value that is null in a map reads as empty: github-id is set to the empty string"}
+    ],
+    "invalid": [
+      {"op": {"type": 1}, "note": "without a title"},
+      {"op": {"type": 1, "title": null}, "note": "a title that is null is absent"},
+      {"op": {"type": 1, "title": "   "}, "note": "a blank title"},
+      {"op": {"type": 1, "title": "\u3164"}, "note": "a title of a Hangul filler is blank"},
+      {"op": {"type": 1, "title": "a\tb"}, "note": "a title is text: no tab"},
+      {"op": {"type": 1, "title": "a\u2028b"}, "note": "a title is text: no line separator"},
+      {"op": {"type": 1, "title": "a\u2067b"}, "note": "an isolate left open"},
+      {"op": {"type": 1, "title": "crash", "files": [null]}, "note": "an element of an array is never null"},
+      {"op": {"type": 3, "message": "a\u202eb"}, "note": "a right-to-left override"},
+      {"op": {"type": 5}, "note": "neither added nor removed"},
+      {"op": {"type": 5, "added": [" "]}, "note": "a blank label"},
+      {"op": {"type": 5, "added": [null]}, "note": "an element of an array is never null"},
+      {"op": {"type": 1, "title": "crash", "metadata": {"a\nb": "x"}}, "note": "a metadata key is text: no line break"},
+      {"op": {"type": 8, "target": "ad3fe2d371f680ae2b9d012631fe2602ebf99efedcb8fdca7a926d65ba85056e", "new_metadata": {"k": "a\u0000b"}}, "note": "a metadata value holds no NUL"}
+    ]
+  },
+
   "id_derivation": [
     {
       "description": "Bug ID equals the ID of its CreateOperation: hex(sha256(raw bytes of ops[0])) in the first pack.",

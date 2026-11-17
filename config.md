@@ -191,8 +191,10 @@ An operation that changes a setting is of one of three *kinds*. On top of the co
 For *set value*, `value` is omitted when it is the zero value. A reader **must** read a
 missing `value` as the zero value.
 
-For *set entry*, `fields` is an object holding the fields that the operation sets, each with
-its value, and `clear` an array of the names of the fields that it clears. Each field is:
+For *set entry*, `fields` is an object holding the fields that the operation sets, each a
+member with its value, and `clear` an array of the names of the fields that it clears. A
+field that is `null` in `fields` is absent ([dag-entity.md §6](dag-entity.md#6-operations)).
+Each field is:
 
 - in neither: it keeps its value;
 - in `clear`: it is cleared, and reads as its default;
