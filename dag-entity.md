@@ -101,10 +101,13 @@ The `ops` blob is a JSON object with the following top-level fields:
 | Field    | Type   | Required | Description                                                        |
 |----------|--------|----------|--------------------------------------------------------------------|
 | `author` | object | yes      | Identity stub: an object with a single `id` field (64-char hex)    |
-| `ops`    | array  | yes      | Ordered array of operation objects; may be empty for merge commits |
+| `ops`    | array  | no       | Ordered array of operation objects; may be empty for merge commits |
 
 The author's full data lives in the identity store (see the identity spec). The `id` here
 is a reference into that store.
+
+A pack without `ops` holds no operation, as the pack of a merge commit does
+([§4](#4-dag-topology-constraints)).
 
 The `ops` blob is a JSON document ([values.md §2](values.md#2-json-documents)): a reader
 **must** reject a pack whose blob breaks its rules.
