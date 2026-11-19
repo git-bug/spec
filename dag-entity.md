@@ -135,11 +135,26 @@ Every operation is a JSON object. Its maps
 
 An operation of a known type that doesn't follow the specification of its entity is
 *invalid*: for example one without a required member, or with a value of the wrong type or
-outside what its member allows. A reader **must** reject an entity holding an invalid
-operation, as a whole: when merging, it keeps its own version of the entity and reports the
-remote one as invalid. An operation of an unknown type is not invalid
+outside what its member allows. An operation of an unknown type is not invalid
 ([§6.4](#64-unknown-operation-types)), nor is a valid operation carrying a member that the
 reader doesn't know.
+
+A client judges an operation when it takes it in, not each time it reads it:
+
+- **Merging** ([§10](#10-merge-algorithm)): a client **must** reject a remote entity when
+  an operation it takes in, one in a commit it doesn't hold yet, is invalid. It rejects the
+  remote entity as a whole: it keeps its own version of the entity and reports the remote
+  one as invalid.
+- **Writing**: a writer **must not** write an invalid operation. The operations already in
+  the entity were judged when it took them in.
+- **Reading** an entity it holds: a reader **must** read an invalid operation as one of an
+  unknown type ([§6.4](#64-unknown-operation-types)), kept verbatim and without effect on
+  the snapshot, and **must** reject the entity if its first operation is invalid, as the
+  entity then has no state to start from.
+
+An entity can hold an invalid operation that no merge rejected: one judged valid by earlier
+rules, or one pushed to a repository directly. Rejecting the entity there would make it
+unreadable for good, as its history only grows ([§10](#10-merge-algorithm)).
 
 ### 6.1 Common fields (present in every operation)
 
@@ -180,7 +195,8 @@ automatically alongside the pack. The current implementation uses arbitrary name
 
 A conforming reader **must** accept and preserve operation objects whose `type` value is not
 recognized. Unknown operations **must not** affect the snapshot state; they **must** be
-retained verbatim if the entity is subsequently written back.
+retained verbatim if the entity is subsequently written back. A reader reads an invalid
+operation of an entity it holds the same way ([§6](#6-operations)).
 
 ### 6.5 SetMetadataOperation (generic pattern)
 
@@ -267,7 +283,8 @@ by definition, so their relative order is arbitrary but must be stable.
 
 ## 10. Merge algorithm
 
-When fetching entity updates from a remote, a client applies one of six scenarios:
+When fetching entity updates from a remote, a client applies one of six scenarios. Before
+scenarios 1, 4 and 6, it judges the operations it takes in ([§6](#6-operations)).
 
 | Scenario             | Condition                                                  | Action                                |
 |----------------------|------------------------------------------------------------|---------------------------------------|
@@ -326,7 +343,10 @@ A conforming **reader**:
 
 - Validates the git tree structure and rejects entities that violate [§4](#4-dag-topology-constraints).
 - Reads each `ops` blob by the rules of [values.md](values.md).
-- Rejects an entity holding an invalid operation ([§6](#6-operations)).
+- Reads an invalid operation of an entity it holds as one of an unknown type, and rejects
+  the entity if its first operation is invalid ([§6](#6-operations)).
+- Rejects a remote entity when an operation it takes in by merging is invalid
+  ([§6](#6-operations)).
 - Checks the format version before decoding and returns a clear error on mismatch.
 - Verifies commit signatures when the author has registered keys ([§11](#11-signing)).
 - Accepts and silently skips operation types it does not recognize ([§6.4](#64-unknown-operation-types)).
@@ -337,6 +357,7 @@ A conforming **reader**:
 
 A conforming **writer**:
 
+- Never writes an invalid operation ([§6](#6-operations)).
 - Sets a nonce of 20–64 random bytes in every operation.
 - Writes each `ops` blob by the rules of [values.md](values.md): without `null`, with integers
   within range.
