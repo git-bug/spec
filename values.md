@@ -1,7 +1,7 @@
 # Specification: JSON and text
 
 This document specifies the rules that every format shares: how to read a JSON document,
-and which strings are text. The specifications of the entities and of identities refer to
+which strings are text, and which are URLs a client may fetch. The specifications of the entities and of identities refer to
 it.
 
 
@@ -164,9 +164,26 @@ The length of a string is its number of code points, not of bytes: `é` written 
 has a length of 1, and as `e` followed by U+0301 a length of 2.
 
 
-## 9. Test vectors
+## 9. HTTPS URLs
 
-Test vectors for text are in [`testdata/text.json`](testdata/text.json). Those for the JSON
-rules are among the vectors of each format: the `ops` blobs of
-[`testdata/dag-entity.json`](testdata/dag-entity.json), and the operations of
-[`testdata/bug.json`](testdata/bug.json) and [`testdata/config.json`](testdata/config.json).
+An *HTTPS URL* is a URL that a client may fetch on its own, without the user following it,
+such as the picture of an identity. It is a string of at most 2048 characters made of, in
+order:
+
+1. `https://`;
+2. a host: one or more ASCII letters, digits, `-` and `.`, optionally followed by `:` and
+   one or more digits;
+3. optionally, a `/`, `?` or `#` followed by any number of ASCII letters, digits and
+   characters among `-._~:/?#[]@!$&'()*+,;=%`, each `%` followed by two hexadecimal digits.
+
+The rule is exact, as URL parsers differ from one language to another, and it holds what a
+client fetches to an HTTPS host, named in full.
+
+
+## 10. Test vectors
+
+Test vectors for text are in [`testdata/text.json`](testdata/text.json), and for HTTPS URLs
+in [`testdata/url.json`](testdata/url.json). Those for the JSON rules are among the vectors
+of each format: the `ops` blobs of [`testdata/dag-entity.json`](testdata/dag-entity.json),
+and the operations of [`testdata/bug.json`](testdata/bug.json) and
+[`testdata/config.json`](testdata/config.json).

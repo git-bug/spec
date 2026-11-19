@@ -54,7 +54,7 @@ an object with the following fields:
 | Name           | `name`       | string                  | no       | Display name of the user; text                                                                              |
 | Email          | `email`      | string                  | no       | Email address (from git config or bridge); text                                                             |
 | Login          | `login`      | string                  | no       | Username from a bridge (e.g. GitHub login); text                                                            |
-| Avatar URL     | `avatar_url` | string                  | no       | URL to a profile picture; text                                                                              |
+| Avatar URL     | `avatar_url` | string                  | no       | URL to a profile picture; HTTPS URL                                                                         |
 | Public keys    | `pub_keys`   | array of key objects    | no       | PGP public keys valid from this version onward                                                              |
 | Lamport times  | `times`      | object (string→integer) | yes      | Snapshot of all known clock values at the time this version was created (see [§4.1](#41-lamport-times-map)) |
 | Unix timestamp | `unix_time`  | integer                 | yes      | Wall-clock time of version creation (seconds since epoch)                                                   |
@@ -67,9 +67,11 @@ A reader **must** reject a version whose blob breaks the rules of JSON documents
 `avatar_url`, `pub_keys` and `metadata` when they are empty, and a reader reads an absent
 optional field as empty.
 
-`name`, `email`, `login` and `avatar_url` are text (see [values.md](values.md#5-text)), and
-`name` and `login` are not both blank. A client shows the picture of `avatar_url` when it
-can fetch it. In `metadata`, each key is text and each value multi-line text.
+`name`, `email` and `login` are text (see [values.md](values.md#5-text)), and `name` and
+`login` are not both blank. In `metadata`, each key is text and each value multi-line text.
+
+An `avatar_url` that is not empty is an HTTPS URL
+([values.md §9](values.md#9-https-urls)). A client shows its picture when it can fetch it.
 
 ### 4.1 Lamport times map
 
