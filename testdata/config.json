@@ -258,7 +258,7 @@
   },
 
   "validity_examples": {
-    "description": "Operations judged on their own, as a reader decodes and validates them (§6, §7). Each one is completed with the common members below, except those it sets itself and those listed in omit. A member that is null reads as absent (dag-entity.md §6). A reader must reject a config holding an invalid operation.",
+    "description": "Operations judged on their own, as a reader decodes and validates them (§6, §7). Each one is completed with the common members below, except those it sets itself and those listed in omit. A member that is null reads as absent (values.md §3). A reader must reject a config holding an invalid operation.",
     "common": {"timestamp": 1609459200, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAAA", "times": {"bugs-create": 14, "bugs-edit": 137}},
     "valid": [
       {"op": {"type": 10001},                                                         "note": "value is omitted: the description becomes the zero value, empty"},

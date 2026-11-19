@@ -101,11 +101,9 @@ from the map counts as 0.
 
 An operation of a known type that doesn't follow this specification is invalid: for example
 one without `times`, without a `key` its kind requires ([§7.2](#72-operations)), or with a
-value of the wrong type or outside what its setting allows ([§9](#9-settings)). A member
-that is `null` is absent ([dag-entity.md §6](dag-entity.md#6-operations)): `"times": null`
-is an operation without `times`. A reader **must** reject a config
-holding an invalid operation, as a whole: when merging, it keeps its own config and reports
-the remote one as invalid. An operation of an unknown type ([§4](#4-operation-type-constants))
+value of the wrong type or outside what its setting allows ([§9](#9-settings)). A reader
+**must** reject a config holding an invalid operation, as a whole: when merging, it keeps
+its own config and reports the remote one as invalid. An operation of an unknown type ([§4](#4-operation-type-constants))
 is not invalid, nor is a valid operation carrying an unknown field ([§7.2](#72-operations)).
 
 
@@ -160,22 +158,14 @@ flowchart TB
 A key identifies an entry of a map, a set or an ordered list. It is a non-empty string, and
 keys are compared byte by byte.
 
-A value is a string, an integer or a boolean:
+A value is a string, an integer ([values.md §4](values.md#4-integers)) or a boolean, whose
+zero values are `""`, `0` and `false`. Anything structured is a map, a set or an ordered
+list.
 
-| Type    | JSON                                 | Zero value |
-|---------|--------------------------------------|------------|
-| String  | A string                             | `""`       |
-| Integer | Digits, with an optional leading `-` | `0`        |
-| Boolean | `true` or `false`                    | `false`    |
-
-An integer lies between −(2⁵³ − 1) and 2⁵³ − 1, so that every JSON implementation reads it
-exactly. Each setting narrows its keys and the type of its values further, for example to
-text ([text.md](text.md)), a maximum length, a fixed set of strings or a range of integers.
-A length is a number of code points, not of bytes ([text.md §5](text.md#5-length)).
-
-There are no other values: no `null`, which reads as absent
-([dag-entity.md §6](dag-entity.md#6-operations)), no objects or arrays, and no fractional
-numbers. Anything structured is a map, a set or an ordered list.
+Each setting narrows its keys and the type of its values further, for example to text
+([values.md](values.md#5-text)), a maximum length, a fixed set of strings or a range of
+integers. A length is a number of code points, not of bytes
+([values.md §8](values.md#8-length)).
 
 ### 7.2 Operations
 
@@ -192,8 +182,7 @@ For *set value*, `value` is omitted when it is the zero value. A reader **must**
 missing `value` as the zero value.
 
 For *set entry*, `fields` is an object holding the fields that the operation sets, each a
-member with its value, and `clear` an array of the names of the fields that it clears. A
-field that is `null` in `fields` is absent ([dag-entity.md §6](dag-entity.md#6-operations)).
+member with its value, and `clear` an array of the names of the fields that it clears.
 Each field is:
 
 - in neither: it keeps its value;
@@ -420,12 +409,12 @@ as each setting defines ([§9](#9-settings)). The operation and its entity stay 
 
 ### 9.1 Repository description
 
-Register, changed by type 10001 (*set value*). The value is text ([text.md](text.md)) of
-at most 256 characters.
+Register, changed by type 10001 (*set value*). The value is text
+([values.md](values.md#5-text)) of at most 256 characters.
 
 ### 9.2 Label definitions
 
-Map, keyed by label name: text that is not blank ([text.md](text.md)), of at most 64
+Map, keyed by label name: text that is not blank ([values.md](values.md#5-text)), of at most 64
 characters. Changed by type 20001 (*set entry*), which defines a label or changes its
 definition, and type 20002 (*remove entry*), which removes the definition.
 
@@ -472,7 +461,7 @@ For example, the SHA-256 of `crash` adds up to 5194, which is 7 modulo 19: `cras
 
 ### 9.3 Allowed labels
 
-Set, keyed by label name: text that is not blank ([text.md](text.md)), of at most 64
+Set, keyed by label name: text that is not blank ([values.md](values.md#5-text)), of at most 64
 characters. Changed by type 20003 (*set entry*), which allows a label, and type 20004
 (*remove entry*), which disallows it.
 

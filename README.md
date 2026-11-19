@@ -9,7 +9,7 @@ pull-requests, …) and identities inside a git repository.
 | Document                           | Scope                                                                                                |
 |------------------------------------|------------------------------------------------------------------------------------------------------|
 | [Identifiers](ids.md)              | ID format and derivation, prefixes, combined IDs                                                     |
-| [Text](text.md)                    | Which strings are text: allowed characters, blank text, length                                       |
+| [JSON and text](values.md)         | Shared rules: decoding JSON documents, null and maps, text, blank text, length                       |
 | [DAG entity format](dag-entity.md) | Base layer for all entities: commits, tree layout, operation packs, clocks, ordering, merge, signing |
 | [Identity format](identity.md)     | User identities: linear version chain, public keys, fast-forward merge                               |
 | [Bug entity](bug.md)               | The `bug` entity: operation types and snapshot semantics                                             |

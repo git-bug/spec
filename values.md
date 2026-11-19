@@ -1,23 +1,86 @@
-# Specification: text
+# Specification: JSON and text
 
-This document specifies which strings are text: the strings shown to people, such as the
-title of a bug, a comment, the name of an identity or the description of a label. The
-specifications of the entities and of identities refer to it for each such string.
+This document specifies the rules that every format shares: how to read a JSON document,
+and which strings are text. The specifications of the entities and of identities refer to
+it.
 
 
 ## 1. Overview
 
-A string that should be text but isn't makes its operation or version invalid, and every
-client must reach the same verdict: one that accepts what another rejects ends up with a
-different history. The rules below are therefore exact, and stated in code points.
+Every client must reach the same verdict on a pack, an operation or a version: one that
+accepts what another rejects ends up with a different history. The rules below are
+therefore exact.
 
-They keep out the characters that break the display of a string or hide part of it: control
-characters, line separators in a single line, the characters that change the direction of
-the text displayed after them, and the noncharacters, which Unicode reserves for internal
-use.
+The JSON rules settle the points where JSON libraries disagree: invalid UTF-8, a byte
+order mark, lone surrogates, repeated member names, deep nesting, the form and range of
+integers, and members that are `null`.
+
+*Text* is a string shown to people, such as the title of a bug, a comment, the name of an
+identity or the description of a label. The text rules, stated in code points, keep out the
+characters that break the display of a string or hide part of it: control characters, line
+separators in a single line, the characters that change the direction of the text displayed
+after them, and the noncharacters, which Unicode reserves for internal use.
 
 
-## 2. Text
+## 2. JSON documents
+
+The `ops` blob of an entity and the `version` blob of an identity are *JSON documents*: JSON
+([RFC 8259](https://www.rfc-editor.org/rfc/rfc8259)) encoded in UTF-8. A reader **must**
+reject a document that:
+
+- is not valid UTF-8;
+- holds an escaped surrogate, `\uD800` to `\uDFFF`, other than a high surrogate followed by
+  a low one;
+- starts with a byte order mark, U+FEFF;
+- holds an object with two members of the same name;
+- nests objects and arrays more than 64 deep, the outermost value counting as 1.
+
+Member names match exactly, case included: in a bug operation, `Title` is an unknown member.
+Many JSON decoders replace invalid UTF-8 or a lone surrogate with U+FFFD, skip a byte order
+mark, keep the last of two members of the same name, or match names regardless of case, so
+a reader checks these rules on the blob itself. Each decoder also stops at a depth of its
+own, and 64 lies within the limit of the common ones.
+
+
+## 3. Members, maps and null
+
+An object in a JSON document is of one of two kinds:
+
+- an object of *members*, whose names the format defines;
+- a *map*, whose keys are data.
+
+Each format names its maps, and defines what each member means when it is absent: a default
+value, a value left unchanged, or an invalid operation or version when the member is
+required.
+
+A reader reads `null` as follows:
+
+- a member that is `null` is absent;
+- a value that is `null` in a map is the empty value of its type, the empty string or 0, and
+  its key stays;
+- an array holding `null` makes its operation or version invalid.
+
+A writer never writes `null`: it leaves the member out, or writes the empty value in a map.
+`null` thus carries no meaning of its own.
+
+A reader applies these rules to what it decodes. An operation of an unknown type is kept
+verbatim, without being decoded
+([dag-entity.md §6.4](dag-entity.md#64-unknown-operation-types)).
+
+
+## 4. Integers
+
+An *integer* is written as digits with an optional leading `-`, without a fraction or an
+exponent, and lies between −(2⁵³ − 1) and 2⁵³ − 1. Every JSON implementation reads such a
+number exactly. Beyond that range, many round it, and decoders disagree on `1.0` or `1e3`:
+some read an integer, others reject it.
+
+A member or map value that a format defines as an integer holds an integer, or its
+operation or version is invalid: a `timestamp` of `1609459200.0`, `1.6e9` or
+`9007199254740992` makes its operation invalid.
+
+
+## 5. Text
 
 *Text* is a string holding none of these characters:
 
@@ -39,7 +102,7 @@ left open would carry on over what a client displays after the string, such as t
 next to the title of a bug.
 
 
-## 3. Multi-line text
+## 6. Multi-line text
 
 *Multi-line text* follows the same rules as text, except that it may also hold the tab
 (U+0009), the line feed (U+000A), the carriage return (U+000D), U+2028 LINE SEPARATOR and
@@ -48,7 +111,7 @@ feed, a carriage return or U+2029 PARAGRAPH SEPARATOR, as in the Unicode Bidirec
 Algorithm.
 
 
-## 4. Blank text
+## 7. Blank text
 
 Text or multi-line text is *blank* when each of its code points is in the list below: the
 spaces and line breaks, the control and format characters, the private-use characters and
@@ -95,12 +158,15 @@ stands, whatever version of Unicode it knows.
 A field that must not be blank says so. Otherwise it may be blank, and in particular empty.
 
 
-## 5. Length
+## 8. Length
 
 The length of a string is its number of code points, not of bytes: `é` written as U+00E9
 has a length of 1, and as `e` followed by U+0301 a length of 2.
 
 
-## 6. Test vectors
+## 9. Test vectors
 
-Test vectors are in [`testdata/text.json`](testdata/text.json).
+Test vectors for text are in [`testdata/text.json`](testdata/text.json). Those for the JSON
+rules are among the vectors of each format: the `ops` blobs of
+[`testdata/dag-entity.json`](testdata/dag-entity.json), and the operations of
+[`testdata/bug.json`](testdata/bug.json) and [`testdata/config.json`](testdata/config.json).

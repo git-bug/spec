@@ -1,5 +1,5 @@
 {
-  "_comment": "Test vectors for the bug entity format. IDs are computed by the reference implementation (Go encoding/json + crypto/sha256). Git object hashes are the ones of a SHA-1 repository. Some operations hold \"files\": null, which reads as absent: no file (dag-entity.md §6).",
+  "_comment": "Test vectors for the bug entity format. IDs are computed by the reference implementation (Go encoding/json + crypto/sha256). Git object hashes are the ones of a SHA-1 repository. Some operations hold \"files\": null, which reads as absent: no file (values.md §3).",
 
   "operation_pack_examples": [
     {
@@ -118,7 +118,7 @@
   ],
 
   "validity_examples": {
-    "description": "Operations judged on their own (bug.md §5, dag-entity.md §6, text.md). Each one is completed with the common members below, except those it sets itself. A member that is null reads as absent.",
+    "description": "Operations judged on their own (bug.md §5, dag-entity.md §6, values.md). Each one is completed with the common members below, except those it sets itself. A member that is null reads as absent.",
     "common": {"timestamp": 1609459200, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAAA"},
     "valid": [
       {"op": {"type": 1, "title": "crash"}, "note": "message and files are omitted: an empty message, no file"},

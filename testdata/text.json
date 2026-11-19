@@ -1,5 +1,5 @@
 {
-  "_comment": "Test vectors for text (text.md). Each string is given as JSON, with escapes for the characters that are not visible. text and multiline_text tell whether it is text and multi-line text; blank, whether each of its code points is in the list of text.md §4; length, its number of code points.",
+  "_comment": "Test vectors for text (values.md §5 to §8). Each string is given as JSON, with escapes for the characters that are not visible. text and multiline_text tell whether it is text and multi-line text; blank, whether each of its code points is in the list of values.md §7; length, its number of code points.",
 
   "examples": [
     {"string": "crash",                          "text": true,  "multiline_text": true,  "blank": false, "length": 5},
@@ -55,7 +55,7 @@
     {"string": "a\u009fb",                       "text": false, "multiline_text": false, "blank": false, "length": 3, "note": "the last control character"},
     {"string": "a\u202ab",                       "text": false, "multiline_text": false, "blank": false, "length": 3, "note": "a left-to-right embedding"},
     {"string": "a\u202eb",                       "text": false, "multiline_text": false, "blank": false, "length": 3, "note": "a right-to-left override"},
-    {"string": "a\ud800b",                       "text": false, "multiline_text": false, "blank": false, "length": 3, "note": "a lone surrogate; a JSON decoder may replace it with U+FFFD, see dag-entity.md §5"},
+    {"string": "a\ud800b",                       "text": false, "multiline_text": false, "blank": false, "length": 3, "note": "a lone surrogate; a JSON decoder may replace it with U+FFFD, see values.md §2"},
     {"string": "a\ufdd0b",                       "text": false, "multiline_text": false, "blank": false, "length": 3, "note": "the first noncharacter of the range"},
     {"string": "a\ufdefb",                       "text": false, "multiline_text": false, "blank": false, "length": 3, "note": "the last noncharacter of the range"},
     {"string": "a\ufffeb",                       "text": false, "multiline_text": false, "blank": false, "length": 3, "note": "a noncharacter, the last but one code point of plane 0"},
