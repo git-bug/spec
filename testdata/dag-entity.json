@@ -98,7 +98,7 @@
   ],
 
   "json_examples": {
-    "description": "ops blobs as a reader finds them in git (dag-entity.md §5, values.md §2 and §4). raw is the blob, given as a JSON string; raw_hex is the blob in hexadecimal, for the blobs that are not valid UTF-8. valid tells whether the blob follows the JSON rules: a reader must reject a pack whose blob breaks those of values.md §2, and an integer that breaks those of values.md §4 makes its operation invalid.",
+    "description": "ops blobs as a reader finds them in git (dag-entity.md §5, values.md §2 and §4). raw is the blob, given as a JSON string; raw_hex is the blob in hexadecimal, for the blobs that are not valid UTF-8. valid tells whether the blob follows the JSON rules: a reader must reject a pack whose blob breaks those of values.md §2 or holds an element of ops that is not an object (dag-entity.md §5), and an integer that breaks those of values.md §4 makes its operation invalid.",
     "examples": [
       {"valid": true, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"test bug\"}]}", "note": "the reference: every rule followed"},
       {"valid": true, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1609459200,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"bug \\ud83d\\udc1b\"}]}", "note": "an escaped surrogate pair: U+1F41B"},
@@ -119,7 +119,10 @@
       {"valid": true, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":9007199254740991,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"test bug\"}]}", "note": "a timestamp of 2^53 - 1, the largest integer"},
       {"valid": false, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":9007199254740992,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"test bug\"}]}", "note": "a timestamp of 2^53, beyond the integers"},
       {"valid": false, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1609459200.0,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"test bug\"}]}", "note": "a timestamp with a fraction"},
-      {"valid": false, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1.6e9,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"test bug\"}]}", "note": "a timestamp with an exponent"}
+      {"valid": false, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[{\"type\":1,\"timestamp\":1.6e9,\"nonce\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"title\":\"test bug\"}]}", "note": "a timestamp with an exponent"},
+      {"valid": false, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[null]}", "note": "an element of ops that is null"},
+      {"valid": false, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":[1]}", "note": "an element of ops that is not an object"},
+      {"valid": true, "raw": "{\"author\":{\"id\":\"b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7\"},\"ops\":null}", "note": "ops that is null is absent: the pack holds no operation, as the pack of a merge commit"}
     ]
   }
 }

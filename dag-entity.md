@@ -107,7 +107,8 @@ The author's full data lives in the identity store (see the identity spec). The 
 is a reference into that store.
 
 A pack without `ops` holds no operation, as the pack of a merge commit does
-([§4](#4-dag-topology-constraints)).
+([§4](#4-dag-topology-constraints)). Each element of `ops` is an object: a reader **must**
+reject a pack whose `ops` holds anything else, `null` included.
 
 The `ops` blob is a JSON document ([values.md §2](values.md#2-json-documents)): a reader
 **must** reject a pack whose blob breaks its rules.
@@ -131,6 +132,14 @@ Every operation is a JSON object. Its maps
 ([values.md §3](values.md#3-members-maps-and-null)) are `metadata`
 ([§6.1](#61-common-fields-present-in-every-operation)), `new_metadata`
 ([§6.5](#65-setmetadataoperation-generic-pattern)) and `times`, in the entities that have it.
+
+An operation of a known type that doesn't follow the specification of its entity is
+*invalid*: for example one without a required member, or with a value of the wrong type or
+outside what its member allows. A reader **must** reject an entity holding an invalid
+operation, as a whole: when merging, it keeps its own version of the entity and reports the
+remote one as invalid. An operation of an unknown type is not invalid
+([§6.4](#64-unknown-operation-types)), nor is a valid operation carrying a member that the
+reader doesn't know.
 
 ### 6.1 Common fields (present in every operation)
 
@@ -317,6 +326,7 @@ A conforming **reader**:
 
 - Validates the git tree structure and rejects entities that violate [§4](#4-dag-topology-constraints).
 - Reads each `ops` blob by the rules of [values.md](values.md).
+- Rejects an entity holding an invalid operation ([§6](#6-operations)).
 - Checks the format version before decoding and returns a clear error on mismatch.
 - Verifies commit signatures when the author has registered keys ([§11](#11-signing)).
 - Accepts and silently skips operation types it does not recognize ([§6.4](#64-unknown-operation-types)).

@@ -1,8 +1,8 @@
 # Specification: JSON and text
 
 This document specifies the rules that every format shares: how to read a JSON document,
-which strings are text, and which are URLs a client may fetch. The specifications of the entities and of identities refer to
-it.
+which strings are text, and which are URLs a client may fetch. The specifications of the
+entities and of identities refer to it.
 
 
 ## 1. Overview
@@ -171,13 +171,40 @@ such as the picture of an identity. It is a string of at most 2048 characters ma
 order:
 
 1. `https://`;
-2. a host: one or more ASCII letters, digits, `-` and `.`, optionally followed by `:` and
-   one or more digits;
+2. a host: two or more labels separated by `.`, each made of 1 to 63 ASCII letters, digits
+   and `-`, the last one starting with a letter;
 3. optionally, a `/`, `?` or `#` followed by any number of ASCII letters, digits and
    characters among `-._~:/?#[]@!$&'()*+,;=%`, each `%` followed by two hexadecimal digits.
 
-The rule is exact, as URL parsers differ from one language to another, and it holds what a
-client fetches to an HTTPS host, named in full.
+The rule is exact, as URL parsers differ from one language to another. It holds only URLs
+to a host named in full, on the default port of HTTPS. There is no port, and no IP address
+in any of the forms that parsers read as one, such as `127.0.0.1`, `2130706433` or
+`0x7f.1`, whose last label starts with a digit. Nor is there a name of a single label, such
+as `localhost`.
+
+### 9.1 Fetching
+
+The rule above does not tell where a name leads: `pictures.example.com` may resolve to the
+address of the client itself or of its local network. A client that fetches an HTTPS URL
+outside a web browser, such as a server or a proxy, **must**:
+
+- verify the certificate of the host, as HTTPS requires;
+- connect only to an address that is globally reachable, by the IANA special-purpose
+  address registries for [IPv4](https://www.iana.org/assignments/iana-ipv4-special-registry/)
+  and [IPv6](https://www.iana.org/assignments/iana-ipv6-special-registry/): never to a
+  loopback, private, link-local or unique local address;
+- connect to the address it checked, not to one it resolves again;
+- follow a redirect only to an HTTPS URL, and check it the same way;
+- bound the size of the response and the time it takes.
+
+A web browser loads a picture without these checks, and doesn't need them: it doesn't let
+the page read the response and, the URL being HTTPS, stops at the TLS handshake with a host
+that has no certificate for its name. A client in a browser **should** send no referrer
+(`referrerpolicy="no-referrer"`), and may restrict the hosts it loads pictures from with a
+Content Security Policy `img-src`.
+
+A fetch tells whoever hosts the URL the address of the client and when it fetches. A client
+may fetch through a proxy, or only from hosts it trusts.
 
 
 ## 10. Test vectors

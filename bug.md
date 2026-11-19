@@ -52,7 +52,8 @@ A valid bug's first operation **must** be a `CreateOperation` (type 1). No other
 All operations include the common fields defined in
 [dag-entity.md §6.1](dag-entity.md#61-common-fields-present-in-every-operation).
 Only entity-specific fields are listed below. Text, multi-line text and blank text are
-defined in [values.md](values.md#5-text).
+defined in [values.md](values.md#5-text). An operation that breaks these rules is
+invalid ([dag-entity.md §6](dag-entity.md#6-operations)).
 
 ### 5.1 CreateOperation (type 1)
 
