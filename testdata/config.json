@@ -131,7 +131,7 @@
             "nonce": "IIIIIIIIIIIIIIIIIIIIIIIIIIII",
             "times": {"bugs-create": 15, "bugs-edit": 160, "config-create": 1, "config-edit": 5},
             "key": "crash",
-            "fields": {"description": null}
+            "clear": ["description"]
           }
         ]
       }
@@ -255,6 +255,58 @@
       "after": {"order": ["x", "p", "r", "q", "y"], "positions": {"x": "a0", "p": "a0V", "r": "a0d", "q": "a0l", "y": "a1"}},
       "note": "a0l and a0d are what Greenspan's midpoint gives; any position between the neighbours is as valid."
     }
+  },
+
+  "validity_examples": {
+    "description": "Operations judged on their own, as a reader decodes and validates them (§6, §7). Each one is completed with the common members below, except those it sets itself and those listed in omit. A member that is null reads as absent (values.md §3). A client rejects a remote config when an operation it takes in by merging is invalid, and a reader skips an invalid operation of a config it holds (dag-entity.md §6).",
+    "common": {"timestamp": 1609459200, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAAA", "times": {"bugs-create": 14, "bugs-edit": 137}},
+    "valid": [
+      {"op": {"type": 10001, "value": ""},                                            "note": "the zero value: the description becomes empty"},
+      {"op": {"type": 20001, "key": "crash"},                                         "note": "fields and clear are omitted: the entry is only added, if absent"},
+      {"op": {"type": 20001, "key": "crash", "fields": {}, "clear": []},              "note": "read as omitted"},
+      {"op": {"type": 20001, "key": "crash", "fields": null, "clear": null},          "note": "null reads as absent"},
+      {"op": {"type": 20001, "key": "crash", "fields": {"weight": 3}, "clear": ["priority"]}, "note": "fields that the reader does not know are ignored"},
+      {"op": {"type": 20003, "key": "crash", "reason": null},                         "note": "a member that the reader does not know is ignored"},
+      {"op": {"type": 20003, "key": "crash", "times": {}},                            "note": "every clock missing from times counts as 0"},
+      {"op": {"type": 20099, "anything": [null, {}]},                                 "note": "an operation of an unknown type is not invalid, whatever it holds"},
+      {"op": {"type": 20003, "key": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé"}, "note": "64 characters, 128 bytes: a length counts code points"}
+    ],
+    "invalid": [
+      {"op": {"type": 20003, "key": "crash", "times": {"bugs-edit": null}},           "note": "a time that is null in a map"},
+      {"op": {"type": 10001},                                                         "note": "without the value its kind requires"},
+      {"op": {"type": 10001, "value": null},                                          "note": "a value that is null is absent"},
+      {"op": {"type": 10001, "value": 42},                                            "note": "a value of the wrong type"},
+      {"op": {"type": 10001, "value": "first line\nsecond line"},                     "note": "the description is text: no line break"},
+      {"op": {"type": 20001, "key": "crash", "fields": {"color": 42}},                "note": "a known field with a value of the wrong type"},
+      {"op": {"type": 20001, "key": "crash", "fields": {"color": "#F44336"}},         "note": "a color is written in lowercase"},
+      {"op": {"type": 20001, "key": "crash", "fields": {"description": ""}},          "note": "a description is not blank: clear clears it"},
+      {"op": {"type": 20001, "key": "crash", "clear": "description"},                 "note": "clear is an array"},
+      {"op": {"type": 20001, "key": "crash", "clear": [42]},                          "note": "clear holds names"},
+      {"op": {"type": 20001, "key": "crash", "clear": [null]},                        "note": "an element of an array is never null"},
+      {"op": {"type": 20003},                                                         "note": "without the key its kind requires"},
+      {"op": {"type": 20003, "key": null},                                            "note": "a key that is null is absent"},
+      {"op": {"type": 20003, "key": ""},                                              "note": "a key is not empty"},
+      {"op": {"type": 20003, "key": "   "},                                           "note": "a label name is not blank"},
+      {"op": {"type": 20003, "key": "a\u202ebc"},                                     "note": "a label name is text: no bidirectional override"},
+      {"op": {"type": 20003, "key": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"}, "note": "65 characters: a label name has at most 64"},
+      {"op": {"type": 20003, "key": "crash"}, "omit": ["times"],                      "note": "without times"},
+      {"op": {"type": 20003, "key": "crash", "times": null},                          "note": "times that is null is absent"}
+    ]
+  },
+
+  "set_entry_examples": {
+    "description": "The definition of the label 'crash' after one set entry on the label definitions (type 20001), starting each time from the definition in before. op lists the members other than type and the common ones of validity_examples.",
+    "before": {"color": "#f44336", "description": "Program dies"},
+    "examples": [
+      {"op": {"key": "crash"},                                                        "after": {"color": "#f44336", "description": "Program dies"}, "note": "nothing listed: every field keeps its value"},
+      {"op": {"key": "crash", "fields": {"color": "#ff9800"}},                        "after": {"color": "#ff9800", "description": "Program dies"}},
+      {"op": {"key": "crash", "clear": ["description"]},                              "after": {"color": "#f44336"}},
+      {"op": {"key": "crash", "fields": {"color": "#ff9800"}, "clear": ["description"]}, "after": {"color": "#ff9800"}},
+      {"op": {"key": "crash", "fields": {"description": null}},                       "after": {"color": "#f44336", "description": "Program dies"}, "note": "null reads as absent: the description keeps its value"},
+      {"op": {"key": "crash", "fields": {"color": "#ff9800"}, "clear": ["color"]},    "after": {"color": "#ff9800", "description": "Program dies"}, "note": "a field both set and cleared takes its value"},
+      {"op": {"key": "crash", "clear": ["color", "description"]},                     "after": {}, "note": "the definition stays, with no field: the label takes the color derived from its name"},
+      {"op": {"key": "crash", "clear": ["priority"]},                                 "after": {"color": "#f44336", "description": "Program dies"}, "note": "a name that the reader does not know is ignored"}
+    ]
   },
 
   "id_derivation": [

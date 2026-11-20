@@ -15,8 +15,8 @@ An ID is a **64-character lowercase hex string**:
 id = lowercase_hex(sha256(data))
 ```
 
-A reader **must** reject an ID whose length is not 64. A 40-character ID comes from an older
-SHA-1 based format; a reader **should** point to
+A reader **must** reject an ID that is not 64 lowercase hex characters. A 40-character ID
+comes from an older SHA-1 based format; a reader **should** point to
 [git-bug-migration](https://github.com/git-bug/git-bug-migration).
 
 

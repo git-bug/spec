@@ -67,8 +67,8 @@ A reader **must** accept packs containing type values not listed above (see
 
 ## 5. Creation
 
-A valid config's first operation **must** be a `CreateOperation` (type 1). No other
-`CreateOperation` may appear in subsequent operations.
+A config's first operation **must** be a `CreateOperation` (type 1). A `CreateOperation`
+anywhere else is invalid ([dag-entity.md §6](dag-entity.md#6-operations)).
 
 The ID of this operation becomes the config's ID. It has only the common fields
 ([§6](#6-common-fields)), `times` among them, and changes no setting.
@@ -99,13 +99,9 @@ the operations of every other entity: the operation applies to those made after 
 ([§8.1](#81-eras)). A reader **must** tolerate unknown keys in `times`. A clock missing
 from the map counts as 0.
 
-An operation of a known type that doesn't follow this specification is invalid: for example
-one without `times`, without a `key` its kind requires ([§7.2](#72-operations)), with `null`
-other than to clear a field ([§7.1](#71-keys-and-values)), or with a value of the wrong type
-or outside what its setting allows ([§9](#9-settings)). A reader **must** reject a config
-holding an invalid operation, as a whole: when merging, it keeps its own config and reports
-the remote one as invalid. An operation of an unknown type ([§4](#4-operation-type-constants))
-is not invalid, nor is a valid operation carrying an unknown field ([§7.2](#72-operations)).
+An operation is invalid ([dag-entity.md §6](dag-entity.md#6-operations)) when, for example,
+it has no `times`, no `value` or `key` its kind requires ([§7.2](#72-operations)), or a
+value of the wrong type or outside what its setting allows ([§9](#9-settings)).
 
 
 ## 7. Setting shapes
@@ -159,48 +155,38 @@ flowchart TB
 A key identifies an entry of a map, a set or an ordered list. It is a non-empty string, and
 keys are compared byte by byte.
 
-A value is a string, an integer or a boolean:
+A value is a string, an integer ([values.md §4](values.md#4-integers)) or a boolean.
+Anything structured is a map, a set or an ordered list.
 
-| Type    | JSON                                 | Zero value |
-|---------|--------------------------------------|------------|
-| String  | A string                             | `""`       |
-| Integer | Digits, with an optional leading `-` | `0`        |
-| Boolean | `true` or `false`                    | `false`    |
-
-An integer lies between −(2⁵³ − 1) and 2⁵³ − 1, so that every JSON implementation reads it
-exactly. Each setting narrows its keys and the type of its values further, for example to a
-single line, a maximum length, a fixed set of strings or a range of integers. A length is a
-number of characters, counted as Unicode code points, not as bytes.
-
-There are no other values: no `null`, which clears a field ([§7.2](#72-operations)), no
-objects or arrays, and no fractional numbers. Anything structured is a map, a set or an
-ordered list.
+Each setting narrows its keys and the type of its values further, for example to text
+([values.md](values.md#5-text)), a maximum length ([values.md §8](values.md#8-length)), a
+fixed set of strings or a range of integers.
 
 ### 7.2 Operations
 
 An operation that changes a setting is of one of three *kinds*. On top of the common fields
 ([§6](#6-common-fields)), it has the JSON keys of its kind:
 
-| Kind           | JSON keys       | Effect                                                                     |
-|----------------|-----------------|----------------------------------------------------------------------------|
-| *set value*    | `value`         | Replaces the value of the register                                         |
-| *set entry*    | `key`, `fields` | Adds the entry if it is absent, then changes the fields listed in `fields` |
-| *remove entry* | `key`           | Removes the entry and clears all its fields                                |
+| Kind           | JSON keys                | Effect                                                                         |
+|----------------|--------------------------|--------------------------------------------------------------------------------|
+| *set value*    | `value`                  | Replaces the value of the register                                             |
+| *set entry*    | `key`, `fields`, `clear` | Adds the entry if absent, sets the fields in `fields`, clears those in `clear` |
+| *remove entry* | `key`                    | Removes the entry and clears all its fields                                    |
 
-For *set value*, `value` is omitted when it is the zero value, and is never `null`. A reader
-**must** read a missing `value` as the zero value.
+For *set value*, `value` holds the new value of the register.
 
-For *set entry*, `fields` is an object whose members are the fields to change. Each field
-is:
+For *set entry*, `fields` is an object holding the fields that the operation sets, each a
+member with its value, and `clear` an array of the names of the fields that it clears.
+Each field is:
 
-- absent: it keeps its value;
-- `null`: it is cleared, and reads as its default;
-- a value: it takes that value.
+- in neither: it keeps its value;
+- in `clear`: it is cleared, and reads as its default;
+- in `fields`: it takes that value, even if `clear` also lists it.
 
-`fields` is omitted when it would be empty, and is never `null`: the operation then only
-adds the entry, if absent. A reader **must** read an empty `fields` object the same way. A reader **must**
-ignore the fields it does not know and apply the others, so that a field can be added to a
-map later without a new operation type ([§7.5](#75-adding-a-setting)).
+Without `fields` and `clear`, or with both empty, the operation only adds the entry, if
+absent. A reader **must** ignore the fields it does not know, in `fields` and in `clear`,
+and apply the others, so that a field can be added to a map later without a new
+operation type ([§7.5](#75-adding-a-setting)).
 
 On a set, a *set entry* lists no field: it adds the key. A *remove entry* removes it.
 
@@ -208,7 +194,7 @@ For example, with the common fields left out:
 
 ```json lines
 {"type": 10001, "value": "A distributed bug tracker"}
-{"type": 20001, "key": "crash", "fields": {"color": "#f44336", "description": null}}
+{"type": 20001, "key": "crash", "fields": {"color": "#f44336"}, "clear": ["description"]}
 {"type": 20003, "key": "crash"}
 {"type": 20002, "key": "crash"}
 ```
@@ -330,8 +316,8 @@ out to match how people change it:
 - items whose order matters are an ordered list.
 
 Fields that must agree with each other, such as the two bounds of a range, are written
-together: the setting requires every *set entry* to list all of them, with `null` for those
-it clears, so that the last one sets them all at once: `"fields": {"min": 1, "max": 5}`,
+together: the setting requires every *set entry* to list all of them, in `fields` or in
+`clear`, so that the last one sets them all at once: `"fields": {"min": 1, "max": 5}`,
 never `"fields": {"min": 1}` alone.
 
 A field holds a single value, so a list that belongs to an item, such as the permissions of
@@ -416,23 +402,23 @@ as each setting defines ([§9](#9-settings)). The operation and its entity stay 
 
 ### 9.1 Repository description
 
-Register, changed by type 10001 (*set value*). The value is a single line of printable
-text, of at most 256 characters.
+Register, changed by type 10001 (*set value*). The value is text
+([values.md](values.md#5-text)) of length at most 256 ([values.md §8](values.md#8-length)).
 
 ### 9.2 Label definitions
 
-Map, keyed by label name: non-empty, single line, at most 64 characters. Changed by type
-20001 (*set entry*), which defines a label or changes its definition, and type 20002
-(*remove entry*), which removes the definition.
+Map, keyed by label name: text that is not blank ([values.md](values.md#5-text)), of length
+at most 64. Changed by type 20001 (*set entry*), which defines a label or changes its
+definition, and type 20002 (*remove entry*), which removes the definition.
 
 | Field         | Value                                          | Default                                    |
 |---------------|------------------------------------------------|--------------------------------------------|
 | `color`       | `#` and six lowercase hex digits (`#rrggbb`)   | The color derived from the name, see below |
-| `description` | Non-empty, single line, at most 256 characters | None                                       |
+| `description` | Text, not blank, of length at most 256         | None                                       |
 
 A label does not need a definition to be used on a bug, and defining a label does not allow
-it ([§9.3](#93-allowed-labels)). A bug may have a label longer than 64 characters, which
-can then be neither defined nor allowed.
+it ([§9.3](#93-allowed-labels)). A bug may have a longer label, which can then be neither
+defined nor allowed.
 
 A label whose definition sets no color, or that has no definition, has a color derived from
 its name, the same in every client:
@@ -468,9 +454,9 @@ For example, the SHA-256 of `crash` adds up to 5194, which is 7 modulo 19: `cras
 
 ### 9.3 Allowed labels
 
-Set, keyed by label name: non-empty, single line, at most 64 characters. Changed by type
-20003 (*set entry*), which allows a label, and type 20004 (*remove entry*), which disallows
-it.
+Set, keyed by label name: text that is not blank ([values.md](values.md#5-text)), of length
+at most 64. Changed by type 20003 (*set entry*), which allows a label, and type 20004
+(*remove entry*), which disallows it.
 
 While no label is allowed, any label may be used. Once at least one label is allowed, only
 the allowed labels may be used. Disallowing a label keeps its definition, so that bugs that
