@@ -12,8 +12,8 @@ accepts what another rejects ends up with a different history. The rules below a
 therefore exact.
 
 The JSON rules settle the points where JSON libraries disagree: invalid UTF-8, a byte
-order mark, lone surrogates, repeated member names, deep nesting, the form and range of
-integers, and members that are `null`.
+order mark, lone surrogates, repeated member names, the form and range of integers, and
+members that are `null`.
 
 *Text* is a string shown to people, such as the title of a bug, a comment, the name of an
 identity or the description of a label. The text rules keep out the characters that break
@@ -30,14 +30,12 @@ reject a document that:
 - holds an escaped surrogate, `\uD800` to `\uDFFF`, other than a high surrogate followed by
   a low one;
 - starts with a byte order mark, U+FEFF;
-- holds an object with two members of the same name;
-- nests objects and arrays more than 64 deep, the outermost value counting as 1.
+- holds an object with two members of the same name.
 
 Member names match exactly, case included: in a bug operation, `Title` is an unknown member.
 Many JSON decoders replace invalid UTF-8 or a lone surrogate with U+FFFD, skip a byte order
 mark, keep the last of two members of the same name, or match names regardless of case, so
-a reader checks these rules on the blob itself. Each decoder also stops at a depth of its
-own, and 64 lies within the limit of the common ones.
+a reader checks these rules on the blob itself.
 
 
 ## 3. Members, maps and null
@@ -207,8 +205,11 @@ may fetch through a proxy, or only from hosts it trusts.
 
 *Base64* is the encoding of [RFC 4648 §4](https://www.rfc-editor.org/rfc/rfc4648#section-4):
 the letters `A`–`Z` and `a`–`z`, the digits, `+` and `/`, padded with `=` to a multiple of 4
-characters, the unused bits of the last character being 0. The string holds nothing else, no
-line break in particular.
+characters. The string holds nothing else, no line break in particular.
+
+The last character before the padding can carry bits that encode no byte. A writer sets them
+to 0, and a reader ignores them, as most decoders do: `AAE=` and `AAF=` both encode the bytes
+0 and 1.
 
 
 ## 11. Test vectors

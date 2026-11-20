@@ -164,7 +164,7 @@ Every operation is a JSON object with the following fields:
 | Field     | JSON key    | Type                   | Required | Description                                           |
 |-----------|-------------|------------------------|----------|-------------------------------------------------------|
 | Type      | `type`      | integer                | yes      | Operation type identifier; values are entity-specific |
-| Timestamp | `timestamp` | integer                | yes      | Unix timestamp (seconds since epoch) for display only |
+| Timestamp | `timestamp` | integer                | yes      | Seconds since epoch, for display only; not 0          |
 | Nonce     | `nonce`     | base64 string          | yes      | Random bytes (20–64 bytes) to ensure ID uniqueness    |
 | Metadata  | `metadata`  | object (string→string) | no       | Arbitrary key/value pairs (bridge metadata, etc.)     |
 

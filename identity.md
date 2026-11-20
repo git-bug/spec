@@ -57,7 +57,7 @@ an object with the following fields:
 | Avatar URL     | `avatar_url` | string                  | no       | URL to a profile picture; HTTPS URL                                                                         |
 | Public keys    | `pub_keys`   | array of key objects    | no       | PGP public keys valid from this version onward                                                              |
 | Lamport times  | `times`      | object (string→integer) | yes      | Snapshot of all known clock values at the time this version was created (see [§4.1](#41-lamport-times-map)) |
-| Unix timestamp | `unix_time`  | integer                 | yes      | Wall-clock time of version creation (seconds since epoch)                                                   |
+| Unix timestamp | `unix_time`  | integer                 | yes      | Wall-clock time of version creation (seconds since epoch), not 0                                            |
 | Nonce          | `nonce`      | base64 string           | yes      | Random bytes (20–64 bytes) to ensure ID uniqueness of the first version                                     |
 | Metadata       | `metadata`   | object (string→string)  | no       | Arbitrary key/value pairs                                                                                   |
 

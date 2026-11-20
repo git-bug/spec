@@ -129,7 +129,8 @@
       {"op": {"type": 5, "added": ["bug"]}, "note": "removed is omitted: no label removed"},
       {"op": {"type": 4, "status": 2, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAA="}, "note": "a nonce of 20 bytes, padded"},
       {"op": {"type": 3, "message": "", "files": ["e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"]}, "note": "a git hash of 40 characters, SHA-1"},
-      {"op": {"type": 1, "title": "crash", "message": "", "metadata": {"github-id": "I_1", "note": "a\nb"}}, "note": "a metadata value is multi-line text"}
+      {"op": {"type": 1, "title": "crash", "message": "", "metadata": {"github-id": "I_1", "note": "a\nb"}}, "note": "a metadata value is multi-line text"},
+      {"op": {"type": 4, "status": 2, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAB="}, "note": "the unused bits of a nonce are ignored"}
     ],
     "invalid": [
       {"op": {"type": 1, "message": ""}, "note": "without a title"},
@@ -137,6 +138,10 @@
       {"op": {"type": 1, "title": "crash", "message": null}, "note": "a message that is null is absent"},
       {"op": {"type": 2, "title": "crash on start"}, "note": "without was"},
       {"op": {"type": 3}, "note": "without a message"},
+      {"op": {"type": 4}, "note": "without a status"},
+      {"op": {"type": 4, "status": 2, "timestamp": 0}, "note": "a timestamp is not 0"},
+      {"op": {"type": 4, "status": 2, "timestamp": null}, "note": "a timestamp that is null is absent"},
+      {"op": {"type": 4, "status": 2, "nonce": null}, "note": "a nonce that is null is absent"},
       {"op": {"type": 1, "title": null, "message": ""}, "note": "a title that is null is absent"},
       {"op": {"type": 1, "title": "   ", "message": ""}, "note": "a blank title"},
       {"op": {"type": 1, "title": "\u3164", "message": ""}, "note": "a title of a Hangul filler is blank"},
@@ -146,7 +151,6 @@
       {"op": {"type": 1, "title": "crash", "message": "", "files": [null]}, "note": "an element of an array is never null"},
       {"op": {"type": 3, "message": "a\u202eb"}, "note": "a right-to-left override"},
       {"op": {"type": 4, "status": 2, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAA"}, "note": "a nonce without its padding"},
-      {"op": {"type": 4, "status": 2, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAB="}, "note": "a nonce whose unused bits are not 0"},
       {"op": {"type": 4, "status": 2, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAA-"}, "note": "a nonce in the URL-safe alphabet"},
       {"op": {"type": 4, "status": 2, "nonce": "AAAAAAAAAAAAAA\nAAAAAAAAAAAAAA"}, "note": "a nonce with a line break"},
       {"op": {"type": 4, "status": 2, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAA=="}, "note": "a nonce of 19 bytes"},
