@@ -100,8 +100,8 @@ the operations of every other entity: the operation applies to those made after 
 from the map counts as 0.
 
 An operation is invalid ([dag-entity.md §6](dag-entity.md#6-operations)) when, for example,
-it has no `times`, no `key` its kind requires ([§7.2](#72-operations)), or a value of the
-wrong type or outside what its setting allows ([§9](#9-settings)).
+it has no `times`, no `value` or `key` its kind requires ([§7.2](#72-operations)), or a
+value of the wrong type or outside what its setting allows ([§9](#9-settings)).
 
 
 ## 7. Setting shapes
@@ -175,8 +175,7 @@ An operation that changes a setting is of one of three *kinds*. On top of the co
 | *set entry*    | `key`, `fields`, `clear` | Adds the entry if absent, sets the fields in `fields`, clears those in `clear` |
 | *remove entry* | `key`                    | Removes the entry and clears all its fields                                    |
 
-For *set value*, `value` is omitted when it is the zero value. A reader **must** read a
-missing `value` as the zero value.
+For *set value*, `value` holds the new value of the register, the zero value included.
 
 For *set entry*, `fields` is an object holding the fields that the operation sets, each a
 member with its value, and `clear` an array of the names of the fields that it clears.

@@ -261,9 +261,7 @@
     "description": "Operations judged on their own, as a reader decodes and validates them (§6, §7). Each one is completed with the common members below, except those it sets itself and those listed in omit. A member that is null reads as absent (values.md §3). A client rejects a remote config when an operation it takes in by merging is invalid, and a reader reads an invalid operation of a config it holds as one of an unknown type (dag-entity.md §6).",
     "common": {"timestamp": 1609459200, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAAA", "times": {"bugs-create": 14, "bugs-edit": 137}},
     "valid": [
-      {"op": {"type": 10001},                                                         "note": "value is omitted: the description becomes the zero value, empty"},
-      {"op": {"type": 10001, "value": null},                                          "note": "null reads as absent: the description becomes empty"},
-      {"op": {"type": 10001, "value": ""},                                            "note": "a writer omits a zero value, but it is not invalid"},
+      {"op": {"type": 10001, "value": ""},                                            "note": "the zero value: the description becomes empty"},
       {"op": {"type": 20001, "key": "crash"},                                         "note": "fields and clear are omitted: the entry is only added, if absent"},
       {"op": {"type": 20001, "key": "crash", "fields": {}, "clear": []},              "note": "read as omitted"},
       {"op": {"type": 20001, "key": "crash", "fields": null, "clear": null},          "note": "null reads as absent"},
@@ -275,6 +273,8 @@
       {"op": {"type": 20003, "key": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé"}, "note": "64 characters, 128 bytes: a length counts code points"}
     ],
     "invalid": [
+      {"op": {"type": 10001},                                                         "note": "without the value its kind requires"},
+      {"op": {"type": 10001, "value": null},                                          "note": "a value that is null is absent"},
       {"op": {"type": 10001, "value": 42},                                            "note": "a value of the wrong type"},
       {"op": {"type": 10001, "value": "first line\nsecond line"},                     "note": "the description is text: no line break"},
       {"op": {"type": 20001, "key": "crash", "fields": {"color": 42}},                "note": "a known field with a value of the wrong type"},
