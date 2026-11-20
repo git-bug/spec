@@ -1,0 +1,41 @@
+{
+  "_comment": "Test vectors for positions.",
+
+  "valid_positions": [
+    {"position": "a0",  "note": "integer part a0, empty fractional part"},
+    {"position": "a0V", "note": "integer part a0, fractional part V"},
+    {"position": "Zz",  "note": "integer part Zz, the one just below a0"},
+    {"position": "b12", "note": "integer part b12: b gives a length of 3"},
+    {"position": "A000000000000000000000000001", "note": "the smallest integer part, with a fractional part"}
+  ],
+
+  "invalid_positions": [
+    {"position": "",     "note": "empty"},
+    {"position": "a",    "note": "a gives an integer part of 2 characters, only 1 is there"},
+    {"position": "b1",   "note": "b gives an integer part of 3 characters, only 2 are there"},
+    {"position": "a00",  "note": "the fractional part 0 ends with 0"},
+    {"position": "a0V0", "note": "the fractional part V0 ends with 0"},
+    {"position": "0a",   "note": "the first character is not a letter"},
+    {"position": "a0~",  "note": "~ is not a digit"},
+    {"position": "A00000000000000000000000000", "note": "A followed by 26 0, with nothing after it"}
+  ],
+
+  "order_example": {
+    "positions": ["a1", "a0V", "Zz", "b00", "a0", "a0G", "az", "A000000000000000000000000001"],
+    "order":     ["A000000000000000000000000001", "Zz", "a0", "a0G", "a0V", "a1", "az", "b00"],
+    "note": "Compared byte by byte."
+  },
+
+  "between_examples": {
+    "description": "Positions that a writer may give to an element inserted between two neighbours. midpoint is what Greenspan's midpoint gives; any position between the neighbours is as valid.",
+    "examples": [
+      {"before": "a0",  "after": "a1",  "midpoint": "a0V", "also_valid": ["a0G", "a0l", "a0V7x"]},
+      {"before": "a0",  "after": "a0V", "midpoint": "a0G"},
+      {"before": "a0V", "after": "a1",  "midpoint": "a0l"},
+      {"before": "a0V", "after": "a0l", "midpoint": "a0d"},
+      {"before": null,  "after": "a0",  "stepped": "Zz", "note": "before the first element, with the integer part stepped down"},
+      {"before": "a0",  "after": null,  "stepped": "a1", "note": "after the last element, with the integer part stepped up"},
+      {"before": "a0V", "after": "a0V", "note": "no position lies between two equal ones: one of the two elements is moved first"}
+    ]
+  }
+}

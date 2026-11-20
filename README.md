@@ -11,8 +11,10 @@ pull-requests, …) and identities inside a git repository.
 | [Identifiers](ids.md)              | ID format and derivation, prefixes, combined IDs                                                     |
 | [JSON and text](values.md)         | Shared rules: decoding JSON documents, null and maps, integers, text, length, HTTPS URLs, base64     |
 | [DAG entity format](dag-entity.md) | Base layer for all entities: commits, tree layout, operation packs, clocks, ordering, merge, signing |
+| [Positions](positions.md)          | Positions ordering the elements of a list: format, order, how to choose one                          |
 | [Identity format](identity.md)     | User identities: linear version chain, public keys, fast-forward merge                               |
-| [Bug entity](bug.md)               | The `bug` entity: operation types and snapshot semantics                                             |
+| [Bug entity](bug.md)               | The `bug` entity: operation types, snapshot semantics, relations between bugs                        |
+| [Board entity](board.md)           | The `board` entity: columns, items holding bugs or drafts, and their order                           |
 | [Config entity](config.md)         | The `config` entity: repository settings shared by every clone, a singleton                          |
 
 Each entity type gets its own spec, following the structure of `bug.md`.
@@ -60,10 +62,12 @@ encounters an unknown operation type skips it and produces a *degraded-but-valid
 the state it understands is correct and consistent, just incomplete from the perspective of
 a fully capable client.
 
-This means new features (a bug assignee field, a priority level, …) can be added as new
-operation types without forcing existing clients to update. Entire new entity namespaces
-(pull-requests, kanban boards, …) can be introduced the same way: clients that do not
-implement a namespace ignore it entirely.
+This means new features (a severity on a bug, an estimate on a board item, …) can be added
+as new operation types without forcing existing clients to update. An existing operation
+type can also be given an optional field, which the clients that do not know it ignore
+(see [dag-entity.md §6.5](dag-entity.md#65-unknown-fields)). Entire new entity namespaces
+(pull-requests, …) can be introduced the same way: clients that do not implement a
+namespace ignore it entirely.
 
 The same principle applies in the other direction: a client that only implements a subset of
 operations can still participate in the network, read the operations it understands, and

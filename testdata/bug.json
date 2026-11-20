@@ -114,6 +114,102 @@
           }
         ]
       }
+    },
+    {
+      "description": "Pack with a SetStatusOperation closing the bug as not planned",
+      "ops_blob": {
+        "author": {"id": "b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7"},
+        "ops": [
+          {
+            "type": 4,
+            "timestamp": 1609484400,
+            "nonce": "HHHHHHHHHHHHHHHHHHHHHHHHHHHH",
+            "status": 2,
+            "reason": 2
+          }
+        ]
+      }
+    },
+    {
+      "description": "Pack with a SetStatusOperation closing the bug as a duplicate of another bug",
+      "ops_blob": {
+        "author": {"id": "b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7"},
+        "ops": [
+          {
+            "type": 4,
+            "timestamp": 1609488000,
+            "nonce": "IIIIIIIIIIIIIIIIIIIIIIIIIIII",
+            "status": 2,
+            "reason": 3,
+            "duplicate_of": "ac3def8400785cfe8c07ffcfd1e92bd9134dc6ddb598ab5ef4f056b88b3c9dc0"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Pack with a SetStatusOperation reopening the bug: its close reason and its duplicate-of are cleared",
+      "ops_blob": {
+        "author": {"id": "b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7"},
+        "ops": [
+          {
+            "type": 4,
+            "timestamp": 1609491600,
+            "nonce": "JJJJJJJJJJJJJJJJJJJJJJJJJJJJ",
+            "status": 1
+          }
+        ]
+      }
+    },
+    {
+      "description": "Pack setting the parent of the bug, and adding a dependency and an assignee, in one edit session",
+      "ops_blob": {
+        "author": {"id": "b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7"},
+        "ops": [
+          {
+            "type": 9,
+            "timestamp": 1609495200,
+            "nonce": "KKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+            "parent": "ac3def8400785cfe8c07ffcfd1e92bd9134dc6ddb598ab5ef4f056b88b3c9dc0"
+          },
+          {
+            "type": 10,
+            "timestamp": 1609495200,
+            "nonce": "LLLLLLLLLLLLLLLLLLLLLLLLLLLL",
+            "dependency": "33dcef3638da84aec74b85583fdfbac9b416897ae0f144ab6948b6bef9785b5e"
+          },
+          {
+            "type": 12,
+            "timestamp": 1609495200,
+            "nonce": "MMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+            "assignee": "63f11b2fffac2a312850b87431cb37e1f2f423b61ef64df49ac46524cbc512b3"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Pack clearing the parent of the bug, and removing its dependency and its assignee",
+      "ops_blob": {
+        "author": {"id": "b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7"},
+        "ops": [
+          {
+            "type": 9,
+            "timestamp": 1609498800,
+            "nonce": "NNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+          },
+          {
+            "type": 11,
+            "timestamp": 1609498800,
+            "nonce": "OOOOOOOOOOOOOOOOOOOOOOOOOOOO",
+            "dependency": "33dcef3638da84aec74b85583fdfbac9b416897ae0f144ab6948b6bef9785b5e"
+          },
+          {
+            "type": 13,
+            "timestamp": 1609498800,
+            "nonce": "PPPPPPPPPPPPPPPPPPPPPPPPPPPP",
+            "assignee": "63f11b2fffac2a312850b87431cb37e1f2f423b61ef64df49ac46524cbc512b3"
+          }
+        ]
+      }
     }
   ],
 
@@ -129,7 +225,12 @@
       {"op": {"type": 5, "added": ["bug"]}, "note": "removed is omitted: no label removed"},
       {"op": {"type": 4, "status": 2, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAA="}, "note": "a nonce of 20 bytes, padded"},
       {"op": {"type": 3, "message": "", "files": ["e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"]}, "note": "a git hash of 40 characters, SHA-1"},
-      {"op": {"type": 1, "title": "crash", "message": "", "metadata": {"github-id": "I_1", "note": "a\nb"}}, "note": "a metadata value is multi-line text"}
+      {"op": {"type": 1, "title": "crash", "message": "", "metadata": {"github-id": "I_1", "note": "a\nb"}}, "note": "a metadata value is multi-line text"},
+      {"op": {"type": 4, "status": 2, "reason": 9}, "note": "a reason the reader does not know reads as no reason"},
+      {"op": {"type": 9, "parent": "ad3fe2d371f680ae2b9d012631fe2602ebf99efedcb8fdca7a926d65ba85056e"}, "note": "sets the parent"},
+      {"op": {"type": 9, "parent": ""}, "note": "clears the parent"},
+      {"op": {"type": 10, "dependency": "ad3fe2d371f680ae2b9d012631fe2602ebf99efedcb8fdca7a926d65ba85056e"}, "note": "a dependency, present or not"},
+      {"op": {"type": 12, "assignee": "b29b7b2e0acb0a91dcf3c6c9d8e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7"}, "note": "an assignee, present or not"}
     ],
     "invalid": [
       {"op": {"type": 1, "message": ""}, "note": "without a title"},
@@ -158,8 +259,78 @@
       {"op": {"type": 5, "added": [null]}, "note": "an element of an array is never null"},
       {"op": {"type": 1, "title": "crash", "message": "", "metadata": {"a\nb": "x"}}, "note": "a metadata key is text: no line break"},
       {"op": {"type": 8, "target": "ad3fe2d371f680ae2b9d012631fe2602ebf99efedcb8fdca7a926d65ba85056e", "new_metadata": {"k": "a\u0000b"}}, "note": "a metadata value holds no NUL"},
-      {"op": {"type": 8, "target": "ad3fe2d371f680ae2b9d012631fe2602ebf99efedcb8fdca7a926d65ba85056e", "new_metadata": {"github-id": null}}, "note": "a value that is null in a map"}
+      {"op": {"type": 8, "target": "ad3fe2d371f680ae2b9d012631fe2602ebf99efedcb8fdca7a926d65ba85056e", "new_metadata": {"github-id": null}}, "note": "a value that is null in a map"},
+      {"op": {"type": 4, "status": 2, "reason": "1"}, "note": "a reason is an integer"},
+      {"op": {"type": 4, "status": 2, "reason": 3, "duplicate_of": "crash"}, "note": "duplicate_of is a bug ID"},
+      {"op": {"type": 9}, "note": "without a parent"},
+      {"op": {"type": 9, "parent": null}, "note": "a parent that is null is absent"},
+      {"op": {"type": 10, "dependency": "AD3FE2D371F680AE2B9D012631FE2602EBF99EFEDCB8FDCA7A926D65BA85056E"}, "note": "a bug ID is in lowercase"},
+      {"op": {"type": 11}, "note": "without a dependency"},
+      {"op": {"type": 12}, "note": "without an assignee"},
+      {"op": {"type": 13, "assignee": "ad3fe2d371f680ae2b9d012631fe2602ebf99efe"}, "note": "an identity ID has 64 characters"}
     ]
+  },
+
+  "status_examples": {
+    "description": "Status, close reason and duplicate-of of a bug after a SetStatusOperation, given by its entity-specific fields. X stands for the ID of another bug, and SELF for the ID of the bug itself.",
+    "examples": [
+      {"fields": {"status": 2},                                "status": "closed", "close_reason": null,          "duplicate_of": null},
+      {"fields": {"status": 2, "reason": 1},                   "status": "closed", "close_reason": "completed",   "duplicate_of": null},
+      {"fields": {"status": 2, "reason": 2},                   "status": "closed", "close_reason": "not planned", "duplicate_of": null},
+      {"fields": {"status": 2, "reason": 3, "duplicate_of": "X"}, "status": "closed", "close_reason": "duplicate", "duplicate_of": "X"},
+      {"fields": {"status": 2, "reason": 3},                   "status": "closed", "close_reason": "duplicate",   "duplicate_of": null, "note": "the bug it duplicates is not known"},
+      {"fields": {"status": 2, "reason": 3, "duplicate_of": "SELF"}, "status": "closed", "close_reason": "duplicate", "duplicate_of": null, "note": "a bug does not duplicate itself"},
+      {"fields": {"status": 2, "reason": 1, "duplicate_of": "X"}, "status": "closed", "close_reason": "completed", "duplicate_of": null, "note": "duplicate_of is ignored: the reason is not 3"},
+      {"fields": {"status": 2, "reason": 9},                   "status": "closed", "close_reason": null,          "duplicate_of": null, "note": "a reason that the reader does not know reads as no reason"},
+      {"fields": {"status": 1, "reason": 1},                   "status": "open",   "close_reason": null,          "duplicate_of": null, "note": "reason is ignored: the status is not 2"}
+    ]
+  },
+
+  "relation_examples": {
+    "description": "What is derived from the bugs present in a repository. Bugs are given by a letter instead of their ID, and pack IDs are shortened.",
+    "parent_cycle": {
+      "description": "The parents of X, Y and Z form a cycle. Each was set by the last SetParentOperation of its bug, in the pack given.",
+      "bugs": [
+        {"bug": "X", "parent": "Y", "set_in_pack": {"edit_clock": 12, "id": "e1"}},
+        {"bug": "Y", "parent": "Z", "set_in_pack": {"edit_clock": 15, "id": "4a"}},
+        {"bug": "Z", "parent": "X", "set_in_pack": {"edit_clock": 15, "id": "b7"}},
+        {"bug": "W", "parent": "X", "set_in_pack": {"edit_clock": 20, "id": "0c"}}
+      ],
+      "read_as": [
+        {"bug": "X", "parent": "Y",  "children": ["W"]},
+        {"bug": "Y", "parent": "Z",  "children": ["X"]},
+        {"bug": "Z", "parent": null, "children": ["Y"]},
+        {"bug": "W", "parent": "X",  "children": []}
+      ],
+      "note": "Among the three operations of the cycle, those of Y and Z have the highest edit-clock, and the one of Z the highest pack ID: Z is read as having no parent. W is not part of the cycle, and its operation is not considered."
+    },
+    "ready": {
+      "description": "A bug is ready when it is open and all its dependencies are closed.",
+      "bugs": [
+        {"bug": "A", "status": "open",   "dependencies": ["B", "C"], "ready": true,  "note": "B and C are closed, whatever their close reason"},
+        {"bug": "B", "status": "closed", "close_reason": "completed",   "dependencies": [], "ready": false, "note": "a closed bug is not ready"},
+        {"bug": "C", "status": "closed", "close_reason": "not planned", "dependencies": [], "ready": false},
+        {"bug": "D", "status": "open",   "dependencies": ["A"],      "ready": false, "note": "A is open"},
+        {"bug": "E", "status": "open",   "dependencies": ["N"],      "ready": false, "note": "N is absent from the repository: it is not known to be closed"},
+        {"bug": "F", "status": "open",   "dependencies": [],         "ready": true},
+        {"bug": "G", "status": "open",   "dependencies": ["H"],      "ready": false, "note": "G and H depend on each other: the cycle is kept, and neither is ready"},
+        {"bug": "H", "status": "open",   "dependencies": ["G"],      "ready": false}
+      ]
+    },
+    "duplicates": {
+      "description": "The original of a duplicate, found by following the duplicate-of from bug to bug.",
+      "bugs": [
+        {"bug": "P", "duplicate_of": "Q",  "create_clock": 3},
+        {"bug": "Q", "duplicate_of": "R",  "create_clock": 5},
+        {"bug": "R", "duplicate_of": null, "create_clock": 1},
+        {"bug": "S", "duplicate_of": "N",  "create_clock": 8},
+        {"bug": "T", "duplicate_of": "U",  "create_clock": 7},
+        {"bug": "U", "duplicate_of": "T",  "create_clock": 4},
+        {"bug": "V", "duplicate_of": "T",  "create_clock": 9}
+      ],
+      "originals": {"P": "R", "Q": "R", "S": "N", "T": "U", "U": "U", "V": "U"},
+      "note": "N is absent from the repository. T and U duplicate each other: the original of both, and of V which leads to them, is U, created first. U is read as an original, not as a duplicate."
+    }
   },
 
   "id_derivation": [

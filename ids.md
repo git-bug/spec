@@ -45,6 +45,7 @@ An operation ID covers all its fields, including inline `metadata`.
 | `refs/identities/<id>`       | Identity ID  | **Must** match the first version's hash, else reject                                                          |
 | `author.id` in an `ops` blob | Identity ID  | **Must** resolve to a known identity                                                                          |
 | `target` of an operation     | Operation ID | Defined by the entity spec                                                                                    |
+| Reference to another entity  | Entity ID    | None: the entity may be absent ([dag-entity.md §6.8](dag-entity.md#68-references-to-other-entities))          |
 | Operation ordering tie-break | Pack ID      | Lexicographic ([dag-entity.md §9](dag-entity.md#9-operation-ordering))                                        |
 
 Operation IDs **must** be unique within an entity; a reader **must** reject an entity with
@@ -98,10 +99,12 @@ The pattern is front-heavy on the secondary so that short prefixes carry part of
 
 ### 5.3 Usage
 
-| Entity | Element                                         | Primary | Secondary                       |
-|--------|-------------------------------------------------|---------|---------------------------------|
-| `bug`  | Comment (including the opening one)             | Bug ID  | ID of the creating operation    |
-| `bug`  | Timeline item (title, status, label changes)    | Bug ID  | ID of the producing operation   |
+| Entity  | Element                                                     | Primary  | Secondary                         |
+|---------|-------------------------------------------------------------|----------|-----------------------------------|
+| `bug`   | Comment (including the opening one)                         | Bug ID   | ID of the creating operation      |
+| `bug`   | Timeline item (change of title, status, labels, parent, …)  | Bug ID   | ID of the producing operation     |
+| `board` | Column                                                      | Board ID | ID of the operation that added it |
+| `board` | Item                                                        | Board ID | ID of the operation that added it |
 
 
 ## 6. Combined ID prefix collisions
@@ -165,4 +168,5 @@ An ambiguous prefix is resolved by a longer one.
 ## 7. Test vectors
 
 See `id_derivation` in [`testdata/dag-entity.json`](testdata/dag-entity.json),
-[`testdata/identity.json`](testdata/identity.json) and [`testdata/bug.json`](testdata/bug.json).
+[`testdata/identity.json`](testdata/identity.json), [`testdata/bug.json`](testdata/bug.json)
+and [`testdata/board.json`](testdata/board.json).
