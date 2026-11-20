@@ -258,7 +258,7 @@
   },
 
   "validity_examples": {
-    "description": "Operations judged on their own, as a reader decodes and validates them (§6, §7). Each one is completed with the common members below, except those it sets itself and those listed in omit. A member that is null reads as absent (values.md §3). A client rejects a remote config when an operation it takes in by merging is invalid, and a reader reads an invalid operation of a config it holds as one of an unknown type (dag-entity.md §6).",
+    "description": "Operations judged on their own, as a reader decodes and validates them (§6, §7). Each one is completed with the common members below, except those it sets itself and those listed in omit. A member that is null reads as absent (values.md §3). A client rejects a remote config when an operation it takes in by merging is invalid, and a reader skips an invalid operation of a config it holds (dag-entity.md §6).",
     "common": {"timestamp": 1609459200, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAAA", "times": {"bugs-create": 14, "bugs-edit": 137}},
     "valid": [
       {"op": {"type": 10001, "value": ""},                                            "note": "the zero value: the description becomes empty"},
@@ -268,11 +268,11 @@
       {"op": {"type": 20001, "key": "crash", "fields": {"weight": 3}, "clear": ["priority"]}, "note": "fields that the reader does not know are ignored"},
       {"op": {"type": 20003, "key": "crash", "reason": null},                         "note": "a member that the reader does not know is ignored"},
       {"op": {"type": 20003, "key": "crash", "times": {}},                            "note": "every clock missing from times counts as 0"},
-      {"op": {"type": 20003, "key": "crash", "times": {"bugs-edit": null}},           "note": "a time that is null reads as 0"},
       {"op": {"type": 20099, "anything": [null, {}]},                                 "note": "an operation of an unknown type is not invalid, whatever it holds"},
       {"op": {"type": 20003, "key": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé"}, "note": "64 characters, 128 bytes: a length counts code points"}
     ],
     "invalid": [
+      {"op": {"type": 20003, "key": "crash", "times": {"bugs-edit": null}},           "note": "a time that is null in a map"},
       {"op": {"type": 10001},                                                         "note": "without the value its kind requires"},
       {"op": {"type": 10001, "value": null},                                          "note": "a value that is null is absent"},
       {"op": {"type": 10001, "value": 42},                                            "note": "a value of the wrong type"},

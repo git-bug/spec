@@ -63,12 +63,12 @@ an object with the following fields:
 
 A reader **must** reject a version whose blob breaks the rules of JSON documents, or whose
 `version` field does not equal 2. The maps of a version are `metadata` and `times`
-([values.md §3](values.md#3-members-maps-and-null)). A writer leaves out `login`,
-`avatar_url`, `pub_keys` and `metadata` when they are empty, and a reader reads an absent
-optional field as empty.
+([values.md §3](values.md#3-members-maps-and-null)). A reader reads an absent optional field
+as empty.
 
 `name`, `email` and `login` are text (see [values.md](values.md#5-text)), and `name` and
 `login` are not both blank. In `metadata`, each key is text and each value multi-line text.
+`nonce` is base64 ([values.md §10](values.md#10-base64)).
 
 An `avatar_url` that is not empty is an HTTPS URL
 ([values.md §9](values.md#9-https-urls)). A client shows its picture when it can fetch it.
@@ -106,10 +106,9 @@ Each entry in `pub_keys` is a JSON string containing an ASCII-armored OpenPGP pu
 **must** be ignored by readers.
 
 **The `pub_keys` array declares the complete set of valid keys for this version onward.**
-It is not a delta from the previous version. To add a key, write a new version whose
-`pub_keys` contains all previously valid keys plus the new one. To revoke a key, write a
-new version whose `pub_keys` omits it. An empty array means no keys are valid from this
-version onward.
+To add a key, write a new version whose `pub_keys` contains all previously valid keys plus
+the new one. To revoke a key, write a new version whose `pub_keys` omits it. An empty array
+means no keys are valid from this version onward.
 
 This model supports multiple keys simultaneously (e.g. one per device) as well as key
 rotation: a user can add a new key before revoking the old one to avoid a gap in signing

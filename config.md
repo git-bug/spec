@@ -67,8 +67,8 @@ A reader **must** accept packs containing type values not listed above (see
 
 ## 5. Creation
 
-A valid config's first operation **must** be a `CreateOperation` (type 1). No other
-`CreateOperation` may appear in subsequent operations.
+A config's first operation **must** be a `CreateOperation` (type 1). A `CreateOperation`
+anywhere else is invalid ([dag-entity.md §6](dag-entity.md#6-operations)).
 
 The ID of this operation becomes the config's ID. It has only the common fields
 ([§6](#6-common-fields)), `times` among them, and changes no setting.
@@ -155,14 +155,12 @@ flowchart TB
 A key identifies an entry of a map, a set or an ordered list. It is a non-empty string, and
 keys are compared byte by byte.
 
-A value is a string, an integer ([values.md §4](values.md#4-integers)) or a boolean, whose
-zero values are `""`, `0` and `false`. Anything structured is a map, a set or an ordered
-list.
+A value is a string, an integer ([values.md §4](values.md#4-integers)) or a boolean.
+Anything structured is a map, a set or an ordered list.
 
 Each setting narrows its keys and the type of its values further, for example to text
-([values.md](values.md#5-text)), a maximum length, a fixed set of strings or a range of
-integers. A length is a number of code points, not of bytes
-([values.md §8](values.md#8-length)).
+([values.md](values.md#5-text)), a maximum length ([values.md §8](values.md#8-length)), a
+fixed set of strings or a range of integers.
 
 ### 7.2 Operations
 
@@ -175,7 +173,7 @@ An operation that changes a setting is of one of three *kinds*. On top of the co
 | *set entry*    | `key`, `fields`, `clear` | Adds the entry if absent, sets the fields in `fields`, clears those in `clear` |
 | *remove entry* | `key`                    | Removes the entry and clears all its fields                                    |
 
-For *set value*, `value` holds the new value of the register, the zero value included.
+For *set value*, `value` holds the new value of the register.
 
 For *set entry*, `fields` is an object holding the fields that the operation sets, each a
 member with its value, and `clear` an array of the names of the fields that it clears.
@@ -185,10 +183,9 @@ Each field is:
 - in `clear`: it is cleared, and reads as its default;
 - in `fields`: it takes that value, even if `clear` also lists it.
 
-`fields` and `clear` are omitted when they would be empty: with neither, the operation only
-adds the entry, if absent. A reader **must** read an empty `fields` object or `clear` array
-the same way. A reader **must** ignore the fields it does not know, in `fields` and in
-`clear`, and apply the others, so that a field can be added to a map later without a new
+Without `fields` and `clear`, or with both empty, the operation only adds the entry, if
+absent. A reader **must** ignore the fields it does not know, in `fields` and in `clear`,
+and apply the others, so that a field can be added to a map later without a new
 operation type ([§7.5](#75-adding-a-setting)).
 
 On a set, a *set entry* lists no field: it adds the key. A *remove entry* removes it.
@@ -406,22 +403,22 @@ as each setting defines ([§9](#9-settings)). The operation and its entity stay 
 ### 9.1 Repository description
 
 Register, changed by type 10001 (*set value*). The value is text
-([values.md](values.md#5-text)) of at most 256 characters.
+([values.md](values.md#5-text)) of length at most 256 ([values.md §8](values.md#8-length)).
 
 ### 9.2 Label definitions
 
-Map, keyed by label name: text that is not blank ([values.md](values.md#5-text)), of at most 64
-characters. Changed by type 20001 (*set entry*), which defines a label or changes its
+Map, keyed by label name: text that is not blank ([values.md](values.md#5-text)), of length
+at most 64. Changed by type 20001 (*set entry*), which defines a label or changes its
 definition, and type 20002 (*remove entry*), which removes the definition.
 
 | Field         | Value                                          | Default                                    |
 |---------------|------------------------------------------------|--------------------------------------------|
 | `color`       | `#` and six lowercase hex digits (`#rrggbb`)   | The color derived from the name, see below |
-| `description` | Text, not blank, of at most 256 characters     | None                                       |
+| `description` | Text, not blank, of length at most 256         | None                                       |
 
 A label does not need a definition to be used on a bug, and defining a label does not allow
-it ([§9.3](#93-allowed-labels)). A bug may have a label longer than 64 characters, which
-can then be neither defined nor allowed.
+it ([§9.3](#93-allowed-labels)). A bug may have a longer label, which can then be neither
+defined nor allowed.
 
 A label whose definition sets no color, or that has no definition, has a color derived from
 its name, the same in every client:
@@ -457,8 +454,8 @@ For example, the SHA-256 of `crash` adds up to 5194, which is 7 modulo 19: `cras
 
 ### 9.3 Allowed labels
 
-Set, keyed by label name: text that is not blank ([values.md](values.md#5-text)), of at most 64
-characters. Changed by type 20003 (*set entry*), which allows a label, and type 20004
+Set, keyed by label name: text that is not blank ([values.md](values.md#5-text)), of length
+at most 64. Changed by type 20003 (*set entry*), which allows a label, and type 20004
 (*remove entry*), which disallows it.
 
 While no label is allowed, any label may be used. Once at least one label is allowed, only

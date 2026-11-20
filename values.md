@@ -1,8 +1,8 @@
 # Specification: JSON and text
 
 This document specifies the rules that every format shares: how to read a JSON document,
-which strings are text, and which are URLs a client may fetch. The specifications of the
-entities and of identities refer to it.
+which strings are text and which are URLs a client may fetch, and how bytes are written in
+base64. The specifications of the entities and of identities refer to it.
 
 
 ## 1. Overview
@@ -16,10 +16,8 @@ order mark, lone surrogates, repeated member names, deep nesting, the form and r
 integers, and members that are `null`.
 
 *Text* is a string shown to people, such as the title of a bug, a comment, the name of an
-identity or the description of a label. The text rules, stated in code points, keep out the
-characters that break the display of a string or hide part of it: control characters, line
-separators in a single line, the characters that change the direction of the text displayed
-after them, and the noncharacters, which Unicode reserves for internal use.
+identity or the description of a label. The text rules keep out the characters that break
+the display of a string or hide part of it ([§5](#5-text)).
 
 
 ## 2. JSON documents
@@ -56,11 +54,9 @@ required.
 A reader reads `null` as follows:
 
 - a member that is `null` is absent;
-- a value that is `null` in a map is the empty value of its type, the empty string or 0, and
-  its key stays;
-- an array holding `null` makes its operation or version invalid.
+- a map or an array holding `null` makes its operation or version invalid.
 
-A writer never writes `null`: it leaves the member out, or writes the empty value in a map.
+A writer never writes `null`: it leaves the member out.
 `null` thus carries no meaning of its own.
 
 A reader applies these rules to what it decodes. An operation of an unknown type is kept
@@ -160,7 +156,7 @@ A field that must not be blank says so. Otherwise it may be blank, and in partic
 
 ## 8. Length
 
-The length of a string is its number of code points, not of bytes: `é` written as U+00E9
+The length of a string is its number of code points: `é` written as U+00E9
 has a length of 1, and as `e` followed by U+0301 a length of 2.
 
 
@@ -207,10 +203,18 @@ A fetch tells whoever hosts the URL the address of the client and when it fetche
 may fetch through a proxy, or only from hosts it trusts.
 
 
-## 10. Test vectors
+## 10. Base64
+
+*Base64* is the encoding of [RFC 4648 §4](https://www.rfc-editor.org/rfc/rfc4648#section-4):
+the letters `A`–`Z` and `a`–`z`, the digits, `+` and `/`, padded with `=` to a multiple of 4
+characters, the unused bits of the last character being 0. The string holds nothing else, no
+line break in particular.
+
+
+## 11. Test vectors
 
 Test vectors for text are in [`testdata/text.json`](testdata/text.json), and for HTTPS URLs
-in [`testdata/url.json`](testdata/url.json). Those for the JSON rules are among the vectors
-of each format: the `ops` blobs of [`testdata/dag-entity.json`](testdata/dag-entity.json),
-and the operations of [`testdata/bug.json`](testdata/bug.json) and
-[`testdata/config.json`](testdata/config.json).
+in [`testdata/url.json`](testdata/url.json). Those for the JSON rules and base64 are among
+the vectors of each format: the `ops` blobs of
+[`testdata/dag-entity.json`](testdata/dag-entity.json), and the operations of
+[`testdata/bug.json`](testdata/bug.json) and [`testdata/config.json`](testdata/config.json).

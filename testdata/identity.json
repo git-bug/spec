@@ -43,7 +43,7 @@
         "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       },
       "notes": [
-        "'pub_keys', 'login', 'avatar_url', and 'metadata' are omitted when empty (omitempty).",
+        "'pub_keys', 'login', 'avatar_url' and 'metadata' are absent: they read as empty.",
         "The identity ID equals hex(sha256(these exact JSON bytes)) for the first version."
       ]
     },

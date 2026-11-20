@@ -100,18 +100,21 @@ The `ops` blob is a JSON object with the following top-level fields:
 
 | Field    | Type   | Required | Description                                                        |
 |----------|--------|----------|--------------------------------------------------------------------|
-| `author` | object | yes      | Identity stub: an object with a single `id` field (64-char hex)    |
-| `ops`    | array  | no       | Ordered array of operation objects; may be empty for merge commits |
+| `author` | object | yes      | Identity stub: an object whose `id` is an identity ID              |
+| `ops`    | array  | no       | Operations, in order; none if absent, as in a merge commit         |
 
 The author's full data lives in the identity store (see the identity spec). The `id` here
-is a reference into that store.
+is a reference into that store, in the format of [ids.md §1](ids.md#1-format).
 
-A pack without `ops` holds no operation, as the pack of a merge commit does
-([§4](#4-dag-topology-constraints)). Each element of `ops` is an object: a reader **must**
-reject a pack whose `ops` holds anything else, `null` included.
+A reader **must** reject a pack:
 
-The `ops` blob is a JSON document ([values.md §2](values.md#2-json-documents)): a reader
-**must** reject a pack whose blob breaks its rules.
+- whose blob breaks the rules of JSON documents ([values.md §2](values.md#2-json-documents));
+- without an `author` whose `id` is an identity ID;
+- whose `ops` holds an element other than an object whose `type` is an integer
+  ([values.md §4](values.md#4-integers)), such as `null`.
+
+Rejecting a pack rejects its entity, as [§4](#4-dag-topology-constraints) does. When
+merging, the client keeps its own version of the entity ([§6](#6-operations)).
 
 **All operations in a single pack share the same author.** A reader **must** reject a pack
 where any operation's author differs from the pack-level author.
@@ -135,9 +138,8 @@ Every operation is a JSON object. Its maps
 
 An operation of a known type that doesn't follow the specification of its entity is
 *invalid*: for example one without a required member, or with a value of the wrong type or
-outside what its member allows. An operation of an unknown type is not invalid
-([§6.4](#64-unknown-operation-types)), nor is a valid operation carrying a member that the
-reader doesn't know.
+outside what its member allows. An operation of an unknown type follows
+[§6.4](#64-unknown-operation-types), and a reader ignores the members it doesn't know.
 
 A client judges an operation when it takes it in, not each time it reads it:
 
@@ -147,10 +149,9 @@ A client judges an operation when it takes it in, not each time it reads it:
   one as invalid.
 - **Writing**: a writer **must not** write an invalid operation. The operations already in
   the entity were judged when it took them in.
-- **Reading** an entity it holds: a reader **must** read an invalid operation as one of an
-  unknown type ([§6.4](#64-unknown-operation-types)), kept verbatim and without effect on
-  the snapshot, and **must** reject the entity if its first operation is invalid, as the
-  entity then has no state to start from.
+- **Reading** an entity it holds: a reader **must** skip an invalid operation, which then
+  has no effect on the snapshot and is kept verbatim, and **must** reject the entity if its
+  first operation is invalid, as the entity then has no state to start from.
 
 An entity can hold an invalid operation that no merge rejected: one judged valid by earlier
 rules, or one pushed to a repository directly. Rejecting the entity there would make it
@@ -167,11 +168,11 @@ Every operation is a JSON object with the following fields:
 | Nonce     | `nonce`     | base64 string          | yes      | Random bytes (20–64 bytes) to ensure ID uniqueness    |
 | Metadata  | `metadata`  | object (string→string) | no       | Arbitrary key/value pairs (bridge metadata, etc.)     |
 
-`author` and `id` are **not** stored in the operation JSON. The author comes from the
-enclosing pack; the ID is derived from the serialized bytes (see [§7](#7-id-derivation)).
+The author of an operation is the one of its pack, and its ID is derived from its
+serialized bytes (see [§7](#7-id-derivation)).
 
 In `metadata`, each key is text and each value multi-line text (see
-[values.md](values.md#5-text)).
+[values.md](values.md#5-text)). `nonce` is base64 ([values.md §10](values.md#10-base64)).
 
 A reader **must** treat the `timestamp` value as informational only — it is not verified and
 may be inaccurate.
@@ -191,12 +192,13 @@ pack are collected in the `extra/` subtree so that a standard `git fetch` transf
 automatically alongside the pack. The current implementation uses arbitrary names
 (`file0`, `file1`, …) and references files by hash only.
 
+A git hash is written in lowercase hex: 40 characters for SHA-1, 64 for SHA-256.
+
 ### 6.4 Unknown operation types
 
 A conforming reader **must** accept and preserve operation objects whose `type` value is not
 recognized. Unknown operations **must not** affect the snapshot state; they **must** be
-retained verbatim if the entity is subsequently written back. A reader reads an invalid
-operation of an entity it holds the same way ([§6](#6-operations)).
+retained verbatim if the entity is subsequently written back.
 
 ### 6.5 SetMetadataOperation (generic pattern)
 
@@ -211,7 +213,7 @@ a later `SetMetadataOperation`.
 | Field               | JSON key       | Type                   | Required |
 |---------------------|----------------|------------------------|----------|
 | (common fields)     | —              | —                      | yes      |
-| Target operation ID | `target`       | 64-char hex string     | yes      |
+| Target operation ID | `target`       | operation ID           | yes      |
 | Metadata to add     | `new_metadata` | object (string→string) | no       |
 
 Without `new_metadata`, the operation adds no metadata. Its keys and values follow the
@@ -343,8 +345,8 @@ A conforming **reader**:
 
 - Validates the git tree structure and rejects entities that violate [§4](#4-dag-topology-constraints).
 - Reads each `ops` blob by the rules of [values.md](values.md).
-- Reads an invalid operation of an entity it holds as one of an unknown type, and rejects
-  the entity if its first operation is invalid ([§6](#6-operations)).
+- Skips an invalid operation of an entity it holds, and rejects the entity if its first
+  operation is invalid ([§6](#6-operations)).
 - Rejects a remote entity when an operation it takes in by merging is invalid
   ([§6](#6-operations)).
 - Checks the format version before decoding and returns a clear error on mismatch.
