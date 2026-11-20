@@ -45,22 +45,33 @@ fast-forward merged result in a conflict (see [§6](#6-merge)).
 
 ## 4. Version blob
 
-Each `version` blob is a JSON object with the following fields:
+Each `version` blob is a JSON document ([values.md §2](values.md#2-json-documents)) holding
+an object with the following fields:
 
 | Field          | JSON key     | Type                    | Required | Description                                                                                                 |
 |----------------|--------------|-------------------------|----------|-------------------------------------------------------------------------------------------------------------|
 | Format version | `version`    | integer                 | yes      | Must equal 2                                                                                                |
-| Name           | `name`       | string                  | no       | Display name of the user                                                                                    |
-| Email          | `email`      | string                  | no       | Email address (from git config or bridge)                                                                   |
-| Login          | `login`      | string                  | no       | Username from a bridge (e.g. GitHub login)                                                                  |
-| Avatar URL     | `avatar_url` | string                  | no       | URL to a profile picture                                                                                    |
+| Name           | `name`       | string                  | no       | Display name of the user; text                                                                              |
+| Email          | `email`      | string                  | no       | Email address (from git config or bridge); text                                                             |
+| Login          | `login`      | string                  | no       | Username from a bridge (e.g. GitHub login); text                                                            |
+| Avatar URL     | `avatar_url` | string                  | no       | URL to a profile picture; HTTPS URL                                                                         |
 | Public keys    | `pub_keys`   | array of key objects    | no       | PGP public keys valid from this version onward                                                              |
 | Lamport times  | `times`      | object (string→integer) | yes      | Snapshot of all known clock values at the time this version was created (see [§4.1](#41-lamport-times-map)) |
-| Unix timestamp | `unix_time`  | integer                 | yes      | Wall-clock time of version creation (seconds since epoch)                                                   |
+| Unix timestamp | `unix_time`  | integer                 | yes      | Wall-clock time of version creation (seconds since epoch), not 0                                            |
 | Nonce          | `nonce`      | base64 string           | yes      | Random bytes (20–64 bytes) to ensure ID uniqueness of the first version                                     |
 | Metadata       | `metadata`   | object (string→string)  | no       | Arbitrary key/value pairs                                                                                   |
 
-A reader **must** reject a version whose `version` field does not equal 2.
+A reader **must** reject a version whose blob breaks the rules of JSON documents, or whose
+`version` field does not equal 2. The maps of a version are `metadata` and `times`
+([values.md §3](values.md#3-members-maps-and-null)). A reader reads an absent optional field
+as empty.
+
+`name`, `email` and `login` are text (see [values.md](values.md#5-text)), and `name` and
+`login` are not both blank. In `metadata`, each key is text and each value multi-line text.
+`nonce` is base64 ([values.md §10](values.md#10-base64)).
+
+An `avatar_url` that is not empty is an HTTPS URL
+([values.md §9](values.md#9-https-urls)). A client shows its picture when it can fetch it.
 
 ### 4.1 Lamport times map
 
@@ -95,10 +106,9 @@ Each entry in `pub_keys` is a JSON string containing an ASCII-armored OpenPGP pu
 **must** be ignored by readers.
 
 **The `pub_keys` array declares the complete set of valid keys for this version onward.**
-It is not a delta from the previous version. To add a key, write a new version whose
-`pub_keys` contains all previously valid keys plus the new one. To revoke a key, write a
-new version whose `pub_keys` omits it. An empty array means no keys are valid from this
-version onward.
+To add a key, write a new version whose `pub_keys` contains all previously valid keys plus
+the new one. To revoke a key, write a new version whose `pub_keys` omits it. An empty array
+means no keys are valid from this version onward.
 
 This model supports multiple keys simultaneously (e.g. one per device) as well as key
 rotation: a user can add a new key before revoking the old one to avoid a gap in signing
@@ -174,9 +184,6 @@ Version with a public key and a bridge login:
   "nonce": "9k3mP1QrX8aLuYoW5NcTzAAAAAA="
 }
 ```
-
-Fields absent from the JSON (`login`, `avatar_url`, `pub_keys`, `metadata`) are omitted
-when empty (`omitempty`). A reader must treat missing optional fields as empty/zero values.
 
 
 ## 5. ID derivation

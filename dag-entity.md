@@ -100,11 +100,21 @@ The `ops` blob is a JSON object with the following top-level fields:
 
 | Field    | Type   | Required | Description                                                        |
 |----------|--------|----------|--------------------------------------------------------------------|
-| `author` | object | yes      | Identity stub: an object with a single `id` field (64-char hex)    |
-| `ops`    | array  | yes      | Ordered array of operation objects; may be empty for merge commits |
+| `author` | object | yes      | Identity stub: an object whose `id` is an identity ID              |
+| `ops`    | array  | no       | Operations, in order; none if absent, as in a merge commit         |
 
 The author's full data lives in the identity store (see the identity spec). The `id` here
-is a reference into that store.
+is a reference into that store, in the format of [ids.md §1](ids.md#1-format).
+
+A reader **must** reject a pack:
+
+- whose blob breaks the rules of JSON documents ([values.md §2](values.md#2-json-documents));
+- without an `author` whose `id` is an identity ID;
+- whose `ops` holds an element other than an object whose `type` is an integer
+  ([values.md §4](values.md#4-integers)), such as `null`.
+
+Rejecting a pack rejects its entity, as [§4](#4-dag-topology-constraints) does. When
+merging, the client keeps its own version of the entity ([§6](#6-operations)).
 
 **All operations in a single pack share the same author.** A reader **must** reject a pack
 where any operation's author differs from the pack-level author.
@@ -121,6 +131,32 @@ in its root commit's operation pack (see [§7](#7-id-derivation)).
 
 ## 6. Operations
 
+Every operation is a JSON object. Its maps
+([values.md §3](values.md#3-members-maps-and-null)) are `metadata`
+([§6.1](#61-common-fields-present-in-every-operation)), `new_metadata`
+([§6.5](#65-setmetadataoperation-generic-pattern)) and `times`, in the entities that have it.
+
+An operation of a known type that doesn't follow the specification of its entity is
+*invalid*: for example one without a required member, or with a value of the wrong type or
+outside what its member allows. An operation of an unknown type follows
+[§6.4](#64-unknown-operation-types), and a reader ignores the members it doesn't know.
+
+A client judges an operation when it takes it in, not each time it reads it:
+
+- **Merging** ([§10](#10-merge-algorithm)): a client **must** reject a remote entity when
+  an operation it takes in, one in a commit it doesn't hold yet, is invalid. It rejects the
+  remote entity as a whole: it keeps its own version of the entity and reports the remote
+  one as invalid.
+- **Writing**: a writer **must not** write an invalid operation. The operations already in
+  the entity were judged when it took them in.
+- **Reading** an entity it holds: a reader **must** skip an invalid operation, which then
+  has no effect on the snapshot and is kept verbatim, and **must** reject the entity if its
+  first operation is invalid, as the entity then has no state to start from.
+
+An entity can hold an invalid operation that no merge rejected: one judged valid by earlier
+rules, or one pushed to a repository directly. Rejecting the entity there would make it
+unreadable for good, as its history only grows ([§10](#10-merge-algorithm)).
+
 ### 6.1 Common fields (present in every operation)
 
 Every operation is a JSON object with the following fields:
@@ -128,12 +164,15 @@ Every operation is a JSON object with the following fields:
 | Field     | JSON key    | Type                   | Required | Description                                           |
 |-----------|-------------|------------------------|----------|-------------------------------------------------------|
 | Type      | `type`      | integer                | yes      | Operation type identifier; values are entity-specific |
-| Timestamp | `timestamp` | integer                | yes      | Unix timestamp (seconds since epoch) for display only |
+| Timestamp | `timestamp` | integer                | yes      | Seconds since epoch, for display only; not 0          |
 | Nonce     | `nonce`     | base64 string          | yes      | Random bytes (20–64 bytes) to ensure ID uniqueness    |
 | Metadata  | `metadata`  | object (string→string) | no       | Arbitrary key/value pairs (bridge metadata, etc.)     |
 
-`author` and `id` are **not** stored in the operation JSON. The author comes from the
-enclosing pack; the ID is derived from the serialized bytes (see [§7](#7-id-derivation)).
+The author of an operation is the one of its pack, and its ID is derived from its
+serialized bytes (see [§7](#7-id-derivation)).
+
+In `metadata`, each key is text and each value multi-line text (see
+[values.md](values.md#5-text)). `nonce` is base64 ([values.md §10](values.md#10-base64)).
 
 A reader **must** treat the `timestamp` value as informational only — it is not verified and
 may be inaccurate.
@@ -152,6 +191,8 @@ of its entry in the `extra/` subtree (e.g. a filename). All referenced blobs for
 pack are collected in the `extra/` subtree so that a standard `git fetch` transfers them
 automatically alongside the pack. The current implementation uses arbitrary names
 (`file0`, `file1`, …) and references files by hash only.
+
+A git hash is written in lowercase hex: 40 characters for SHA-1, 64 for SHA-256.
 
 ### 6.4 Unknown operation types
 
@@ -172,8 +213,11 @@ a later `SetMetadataOperation`.
 | Field               | JSON key       | Type                   | Required |
 |---------------------|----------------|------------------------|----------|
 | (common fields)     | —              | —                      | yes      |
-| Target operation ID | `target`       | 64-char hex string     | yes      |
-| Metadata to add     | `new_metadata` | object (string→string) | yes      |
+| Target operation ID | `target`       | operation ID           | yes      |
+| Metadata to add     | `new_metadata` | object (string→string) | no       |
+
+Without `new_metadata`, the operation adds no metadata. Its keys and values follow the
+rules of `metadata` ([§6.1](#61-common-fields-present-in-every-operation)).
 
 ### 6.6 NoOpOperation (generic pattern)
 
@@ -241,7 +285,8 @@ by definition, so their relative order is arbitrary but must be stable.
 
 ## 10. Merge algorithm
 
-When fetching entity updates from a remote, a client applies one of six scenarios:
+When fetching entity updates from a remote, a client applies one of six scenarios. Before
+scenarios 1, 4 and 6, it judges the operations it takes in ([§6](#6-operations)).
 
 | Scenario             | Condition                                                  | Action                                |
 |----------------------|------------------------------------------------------------|---------------------------------------|
@@ -299,6 +344,11 @@ development.
 A conforming **reader**:
 
 - Validates the git tree structure and rejects entities that violate [§4](#4-dag-topology-constraints).
+- Reads each `ops` blob by the rules of [values.md](values.md).
+- Skips an invalid operation of an entity it holds, and rejects the entity if its first
+  operation is invalid ([§6](#6-operations)).
+- Rejects a remote entity when an operation it takes in by merging is invalid
+  ([§6](#6-operations)).
 - Checks the format version before decoding and returns a clear error on mismatch.
 - Verifies commit signatures when the author has registered keys ([§11](#11-signing)).
 - Accepts and silently skips operation types it does not recognize ([§6.4](#64-unknown-operation-types)).
@@ -309,7 +359,10 @@ A conforming **reader**:
 
 A conforming **writer**:
 
+- Never writes an invalid operation ([§6](#6-operations)).
 - Sets a nonce of 20–64 random bytes in every operation.
+- Writes each `ops` blob by the rules of [values.md](values.md): without `null`, with integers
+  within range.
 - Encodes clock values in tree entry names pointing to the empty blob.
 - Signs commits when the author has a registered key.
 - Does not modify or discard operation packs it does not understand.
