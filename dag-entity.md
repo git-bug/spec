@@ -110,6 +110,8 @@ A reader **must** reject a pack:
 
 - whose blob breaks the rules of JSON documents ([values.md §2](values.md#2-json-documents));
 - without an `author` object whose `id` is an ID ([ids.md §1](ids.md#1-format));
+- whose author `id` doesn't resolve to an identity the client holds: signature
+  verification ([§11](#11-signing)) needs its keys;
 - whose `ops` holds an element other than an object whose `type` is an integer
   ([values.md §4](values.md#4-integers)), such as `null`.
 
@@ -309,6 +311,9 @@ Pushing fails as well, as the remote only accepts fast-forward updates.
 Remote entities fetched via git land at `refs/remotes/<remote>/<namespace>/<id>` (or
 `<key>` for a singleton). After merging, the result is stored at `refs/<namespace>/<id>`
 (or `<key>`).
+
+A client **must** merge the remote's identities ([identity.md](identity.md)) before the
+entities that reference them, so that the authors of the remote's packs resolve.
 
 **Scenario 6 in detail**: a new commit M is created with two parents (local tip and remote
 tip). Its `ops` blob contains an empty operation array. The commit is attributed to the
