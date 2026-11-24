@@ -100,11 +100,20 @@ The `ops` blob is a JSON object with the following top-level fields:
 
 | Field    | Type   | Required | Description                                                        |
 |----------|--------|----------|--------------------------------------------------------------------|
-| `author` | object | yes      | Identity stub: an object with a single `id` field (64-char hex)    |
-| `ops`    | array  | yes      | Ordered array of operation objects; may be empty for merge commits |
+| `author` | object | yes      | Identity stub: an object whose `id` is an identity ID              |
+| `ops`    | array  | no       | Operations, in order; none if absent, as in a merge commit         |
 
 The author's full data lives in the identity store (see the identity spec). The `id` here
-is a reference into that store.
+is a reference into that store, in the format of [ids.md §1](ids.md#1-format).
+
+A reader **must** reject a pack:
+
+- whose blob breaks the rules of JSON documents ([values.md §2](values.md#2-json-documents));
+- without an `author` object whose `id` is an ID ([ids.md §1](ids.md#1-format));
+- whose `ops` holds an element other than an object whose `type` is an integer
+  ([values.md §4](values.md#4-integers)), such as `null`.
+
+Rejecting a pack rejects its entity, as [§4](#4-dag-topology-constraints) does.
 
 **All operations in a single pack share the same author.** A reader **must** reject a pack
 where any operation's author differs from the pack-level author.
@@ -120,6 +129,11 @@ in its root commit's operation pack (see [§7](#7-id-derivation)).
 
 
 ## 6. Operations
+
+Every operation is a JSON object. Its maps
+([values.md §3](values.md#3-members-maps-and-null)) are `metadata`
+([§6.1](#61-common-fields-present-in-every-operation)), `new_metadata`
+([§6.5](#65-setmetadataoperation-generic-pattern)) and `times`, in the entities that have it.
 
 ### 6.1 Common fields (present in every operation)
 
@@ -173,7 +187,9 @@ a later `SetMetadataOperation`.
 |---------------------|----------------|------------------------|----------|
 | (common fields)     | —              | —                      | yes      |
 | Target operation ID | `target`       | 64-char hex string     | yes      |
-| Metadata to add     | `new_metadata` | object (string→string) | yes      |
+| Metadata to add     | `new_metadata` | object (string→string) | no       |
+
+Without `new_metadata`, the operation adds no metadata.
 
 ### 6.6 NoOpOperation (generic pattern)
 
@@ -299,6 +315,7 @@ development.
 A conforming **reader**:
 
 - Validates the git tree structure and rejects entities that violate [§4](#4-dag-topology-constraints).
+- Reads each `ops` blob by the rules of [values.md](values.md).
 - Checks the format version before decoding and returns a clear error on mismatch.
 - Verifies commit signatures when the author has registered keys ([§11](#11-signing)).
 - Accepts and silently skips operation types it does not recognize ([§6.4](#64-unknown-operation-types)).
@@ -310,6 +327,8 @@ A conforming **reader**:
 A conforming **writer**:
 
 - Sets a nonce of 20–64 random bytes in every operation.
+- Writes each `ops` blob by the rules of [values.md](values.md): without `null`, with integers
+  within range.
 - Encodes clock values in tree entry names pointing to the empty blob.
 - Signs commits when the author has a registered key.
 - Does not modify or discard operation packs it does not understand.

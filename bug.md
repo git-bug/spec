@@ -61,7 +61,7 @@ Creates the bug. The ID of this operation becomes the bug's ID.
 |---------|-----------|---------------------------|----------|----------------------------------------------------|
 | Title   | `title`   | string                    | yes      | Single-line bug title; must not be empty           |
 | Message | `message` | string                    | yes      | Opening comment body (may be empty)                |
-| Files   | `files`   | array of git hash strings | yes      | Blobs referenced in `message`; empty array if none |
+| Files   | `files`   | array of git hash strings | no       | Blobs referenced in `message`; none if absent      |
 
 **Apply**: initializes all snapshot fields. Sets the bug ID (equal to this operation's ID),
 the author, the title, and the first comment. The opening comment is identified by this
@@ -113,7 +113,7 @@ Adds a comment to the bug thread.
 | Field   | JSON key  | Type                      | Required | Description                                        |
 |---------|-----------|---------------------------|----------|----------------------------------------------------|
 | Message | `message` | string                    | yes      | Comment body (may be empty)                        |
-| Files   | `files`   | array of git hash strings | yes      | Blobs referenced in `message`; empty array if none |
+| Files   | `files`   | array of git hash strings | no       | Blobs referenced in `message`; none if absent      |
 
 **Apply**: appends a new comment to the snapshot's comment list. The comment is identified
 by this operation's ID; its combined ID (see [ids.md](ids.md#5-combined-ids)) is
@@ -158,10 +158,10 @@ Example:
 
 Adds and/or removes labels. Labels are arbitrary non-empty strings.
 
-| Field          | JSON key  | Type             | Required | Description                    |
-|----------------|-----------|------------------|----------|--------------------------------|
-| Added labels   | `added`   | array of strings | yes      | Labels to add; may be empty    |
-| Removed labels | `removed` | array of strings | yes      | Labels to remove; may be empty |
+| Field          | JSON key  | Type             | Required | Description                      |
+|----------------|-----------|------------------|----------|----------------------------------|
+| Added labels   | `added`   | array of strings | no       | Labels to add; none if absent    |
+| Removed labels | `removed` | array of strings | no       | Labels to remove; none if absent |
 
 At least one of `added` or `removed` must be non-empty.
 
@@ -193,7 +193,7 @@ Edits the body of an existing comment (including the opening comment created by
 |---------|-----------|---------------------------|----------|------------------------------------------------------------|
 | Target  | `target`  | 64-char hex string        | yes      | ID of the operation that originally created the comment    |
 | Message | `message` | string                    | yes      | New comment body                                           |
-| Files   | `files`   | array of git hash strings | yes      | Blobs referenced in the new `message`; empty array if none |
+| Files   | `files`   | array of git hash strings | no       | Blobs referenced in the new `message`; none if absent      |
 
 **Apply**: locates the comment whose creating operation ID matches `target` and scans the
 timeline. If not found, the operation is a silent no-op. If found, the
@@ -227,16 +227,16 @@ See [dag-entity.md §6.6](dag-entity.md#66-noopoperation-generic-pattern).
 See [dag-entity.md §6.5](dag-entity.md#65-setmetadataoperation-generic-pattern) for the
 full semantics. The `target` ID refers to any operation in the bug's history.
 
+| Field        | JSON key       | Type                   | Required |
+|--------------|----------------|------------------------|----------|
+| Target       | `target`       | 64-char hex string     | yes      |
+| New metadata | `new_metadata` | object (string→string) | no       |
+
 **Apply**: scans all operations in the snapshot for the one whose ID matches `target`, then
 merges `new_metadata` into its metadata map. **First-write-wins per key**: if a key is
 already present (set by the operation's inline `metadata` or a prior `SetMetadataOperation`
 in the total order), the new value is silently discarded. This means the first annotation
 that arrives in operation order persists permanently and cannot be overridden.
-
-| Field        | JSON key       | Type                   | Required |
-|--------------|----------------|------------------------|----------|
-| Target       | `target`       | 64-char hex string     | yes      |
-| New metadata | `new_metadata` | object (string→string) | yes      |
 
 
 ## 6. Operation metadata

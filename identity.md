@@ -45,7 +45,8 @@ fast-forward merged result in a conflict (see [§6](#6-merge)).
 
 ## 4. Version blob
 
-Each `version` blob is a JSON object with the following fields:
+Each `version` blob is a JSON document ([values.md §2](values.md#2-json-documents)) holding
+an object with the following fields:
 
 | Field          | JSON key     | Type                    | Required | Description                                                                                                 |
 |----------------|--------------|-------------------------|----------|-------------------------------------------------------------------------------------------------------------|
@@ -60,7 +61,10 @@ Each `version` blob is a JSON object with the following fields:
 | Nonce          | `nonce`      | base64 string           | yes      | Random bytes (20–64 bytes) to ensure ID uniqueness of the first version                                     |
 | Metadata       | `metadata`   | object (string→string)  | no       | Arbitrary key/value pairs                                                                                   |
 
-A reader **must** reject a version whose `version` field does not equal 2.
+A reader **must** reject a version whose blob breaks the rules of JSON documents, or whose
+`version` field does not equal 2. The maps of a version are `metadata` and `times`
+([values.md §3](values.md#3-members-maps-and-null)). A reader reads an absent optional field
+as empty.
 
 ### 4.1 Lamport times map
 
@@ -173,9 +177,6 @@ Version with a public key and a bridge login:
   "nonce": "9k3mP1QrX8aLuYoW5NcTzAAAAAA="
 }
 ```
-
-Fields absent from the JSON (`login`, `avatar_url`, `pub_keys`, `metadata`) are omitted
-when empty (`omitempty`). A reader must treat missing optional fields as empty/zero values.
 
 
 ## 5. ID derivation
