@@ -67,8 +67,8 @@ A reader **must** accept packs containing type values not listed above (see
 
 ## 5. Creation
 
-A valid config's first operation **must** be a `CreateOperation` (type 1). No other
-`CreateOperation` may appear in subsequent operations.
+A config's first operation **must** be a `CreateOperation` (type 1). A `CreateOperation`
+anywhere else is invalid ([dag-entity.md §6](dag-entity.md#6-operations)).
 
 The ID of this operation becomes the config's ID. It has only the common fields
 ([§6](#6-common-fields)), `times` among them, and changes no setting.
@@ -99,13 +99,9 @@ the operations of every other entity: the operation applies to those made after 
 ([§8.1](#81-eras)). A reader **must** tolerate unknown keys in `times`. A clock missing
 from the map counts as 0.
 
-An operation of a known type that doesn't follow this specification is invalid: for example
-one without `times`, without a `value` or `key` its kind requires ([§7.2](#72-operations)),
-or with a value of the wrong type or outside what its setting allows ([§9](#9-settings)). A
-reader **must** reject a config holding an invalid operation, as a whole: when merging, it
-keeps its own config and reports the remote one as invalid. An operation of an unknown type
-([§4](#4-operation-type-constants)) is not invalid, nor is a valid operation carrying an
-unknown field ([§7.2](#72-operations)).
+An operation is invalid ([dag-entity.md §6](dag-entity.md#6-operations)) when, for example,
+it has no `times`, no `value` or `key` its kind requires ([§7.2](#72-operations)), or a
+value of the wrong type or outside what its setting allows ([§9](#9-settings)).
 
 
 ## 7. Setting shapes

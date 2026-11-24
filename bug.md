@@ -28,7 +28,7 @@ Operation types are encoded as integers in the `type` field of each operation JS
 
 | Constant        | Integer | Description                                                             |
 |-----------------|---------|-------------------------------------------------------------------------|
-| `CreateOp`      | 1       | Create the bug (must be the first and only operation in the first pack) |
+| `CreateOp`      | 1       | Create the bug (the first operation, and only it)                       |
 | `SetTitleOp`    | 2       | Change the bug title                                                    |
 | `AddCommentOp`  | 3       | Add a comment                                                           |
 | `SetStatusOp`   | 4       | Change the bug status                                                   |
@@ -43,8 +43,8 @@ A reader **must** accept packs containing type values not listed above (see
 
 ## 4. Initial invariant
 
-A valid bug's first operation **must** be a `CreateOperation` (type 1). No other
-`CreateOperation` may appear in subsequent operations.
+A bug's first operation **must** be a `CreateOperation` (type 1). A `CreateOperation`
+anywhere else is invalid ([dag-entity.md §6](dag-entity.md#6-operations)).
 
 
 ## 5. Operation schemas
@@ -53,7 +53,8 @@ All operations include the common fields defined in
 [dag-entity.md §6.1](dag-entity.md#61-common-fields-present-in-every-operation).
 Only entity-specific fields are listed below. Text, multi-line text and blank text are
 defined in [values.md](values.md#5-text), operation IDs in [ids.md §1](ids.md#1-format), and
-git hashes in [dag-entity.md §6.3](dag-entity.md#63-file-attachments).
+git hashes in [dag-entity.md §6.3](dag-entity.md#63-file-attachments). An operation that breaks these rules is
+invalid ([dag-entity.md §6](dag-entity.md#6-operations)).
 
 ### 5.1 CreateOperation (type 1)
 
@@ -68,7 +69,7 @@ Creates the bug. The ID of this operation becomes the bug's ID.
 **Apply**: initializes all snapshot fields. Sets the bug ID (equal to this operation's ID),
 the author, the title, and the first comment. The opening comment is identified by this
 operation's ID; its combined ID (see [ids.md](ids.md#5-combined-ids)) is exposed in
-APIs and UIs. A second `CreateOperation` encountered during replay is silently ignored.
+APIs and UIs.
 
 Example:
 ```json
