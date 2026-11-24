@@ -57,7 +57,7 @@ an object with the following fields:
 | Avatar URL     | `avatar_url` | string                  | no       | URL to a profile picture; HTTPS URL                                                                         |
 | Public keys    | `pub_keys`   | array of key objects    | no       | PGP public keys valid from this version onward                                                              |
 | Lamport times  | `times`      | object (string→integer) | yes      | Snapshot of all known clock values at the time this version was created (see [§4.1](#41-lamport-times-map)) |
-| Unix timestamp | `unix_time`  | integer                 | yes      | Wall-clock time of version creation (seconds since epoch)                                                   |
+| Unix timestamp | `unix_time`  | integer                 | yes      | Wall-clock time of version creation (seconds since epoch), not 0                                            |
 | Nonce          | `nonce`      | base64 string           | yes      | Random bytes (20–64 bytes) to ensure ID uniqueness of the first version                                     |
 | Metadata       | `metadata`   | object (string→string)  | no       | Arbitrary key/value pairs                                                                                   |
 
@@ -68,6 +68,7 @@ as empty.
 
 `name`, `email` and `login` are text (see [values.md](values.md#5-text)), and `name` and
 `login` are not both blank. In `metadata`, each key is text and each value multi-line text.
+`nonce` is base64 ([values.md §10](values.md#10-base64)).
 
 An `avatar_url` that is not empty is an HTTPS URL
 ([values.md §9](values.md#9-https-urls)). A client shows its picture when it can fetch it.

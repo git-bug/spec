@@ -127,7 +127,10 @@
       {"op": {"type": 3, "message": ""}, "note": "a comment may be blank"},
       {"op": {"type": 3, "message": "line one\u2028line two"}, "note": "a comment is multi-line text: U+2028 is allowed"},
       {"op": {"type": 5, "added": ["bug"]}, "note": "removed is omitted: no label removed"},
-      {"op": {"type": 1, "title": "crash", "message": "", "metadata": {"github-id": "I_1", "note": "a\nb"}}, "note": "a metadata value is multi-line text"}
+      {"op": {"type": 4, "status": 2, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAA="}, "note": "a nonce of 20 bytes, padded"},
+      {"op": {"type": 3, "message": "", "files": ["e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"]}, "note": "a git hash of 40 characters, SHA-1"},
+      {"op": {"type": 1, "title": "crash", "message": "", "metadata": {"github-id": "I_1", "note": "a\nb"}}, "note": "a metadata value is multi-line text"},
+      {"op": {"type": 4, "status": 2, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAB="}, "note": "the unused bits of a nonce are ignored"}
     ],
     "invalid": [
       {"op": {"type": 1, "message": ""}, "note": "without a title"},
@@ -136,6 +139,7 @@
       {"op": {"type": 2, "title": "crash on start"}, "note": "without was"},
       {"op": {"type": 3}, "note": "without a message"},
       {"op": {"type": 4}, "note": "without a status"},
+      {"op": {"type": 4, "status": 2, "timestamp": 0}, "note": "a timestamp is not 0"},
       {"op": {"type": 4, "status": 2, "timestamp": null}, "note": "a timestamp that is null is absent"},
       {"op": {"type": 4, "status": 2, "nonce": null}, "note": "a nonce that is null is absent"},
       {"op": {"type": 1, "title": null, "message": ""}, "note": "a title that is null is absent"},
@@ -146,6 +150,13 @@
       {"op": {"type": 1, "title": "a\u2067b", "message": ""}, "note": "an isolate left open"},
       {"op": {"type": 1, "title": "crash", "message": "", "files": [null]}, "note": "an element of an array is never null"},
       {"op": {"type": 3, "message": "a\u202eb"}, "note": "a right-to-left override"},
+      {"op": {"type": 4, "status": 2, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAA"}, "note": "a nonce without its padding"},
+      {"op": {"type": 4, "status": 2, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAA-"}, "note": "a nonce in the URL-safe alphabet"},
+      {"op": {"type": 4, "status": 2, "nonce": "AAAAAAAAAAAAAA\nAAAAAAAAAAAAAA"}, "note": "a nonce with a line break"},
+      {"op": {"type": 4, "status": 2, "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAA=="}, "note": "a nonce of 19 bytes"},
+      {"op": {"type": 3, "message": "", "files": ["e69de29b"]}, "note": "a git hash has 40 or 64 characters"},
+      {"op": {"type": 3, "message": "", "files": ["E69DE29BB2D1D6434B8B29AE775AD8C2E48C5391"]}, "note": "a git hash is in lowercase"},
+      {"op": {"type": 8, "target": "AD3FE2D371F680AE2B9D012631FE2602EBF99EFEDCB8FDCA7A926D65BA85056E"}, "note": "an operation ID is in lowercase"},
       {"op": {"type": 5}, "note": "neither added nor removed"},
       {"op": {"type": 5, "added": [" "]}, "note": "a blank label"},
       {"op": {"type": 5, "added": [null]}, "note": "an element of an array is never null"},

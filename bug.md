@@ -52,7 +52,8 @@ A valid bug's first operation **must** be a `CreateOperation` (type 1). No other
 All operations include the common fields defined in
 [dag-entity.md §6.1](dag-entity.md#61-common-fields-present-in-every-operation).
 Only entity-specific fields are listed below. Text, multi-line text and blank text are
-defined in [values.md](values.md#5-text).
+defined in [values.md](values.md#5-text), operation IDs in [ids.md §1](ids.md#1-format), and
+git hashes in [dag-entity.md §6.3](dag-entity.md#63-file-attachments).
 
 ### 5.1 CreateOperation (type 1)
 
@@ -62,7 +63,7 @@ Creates the bug. The ID of this operation becomes the bug's ID.
 |---------|-----------|---------------------------|----------|----------------------------------------------------|
 | Title   | `title`   | string                    | yes      | Bug title; text, not blank                         |
 | Message | `message` | string                    | yes      | Opening comment; multi-line text                   |
-| Files   | `files`   | array of git hash strings | no       | Blobs referenced in `message`; none if absent      |
+| Files   | `files`   | array of git hashes       | no       | Blobs referenced in `message`; none if absent      |
 
 **Apply**: initializes all snapshot fields. Sets the bug ID (equal to this operation's ID),
 the author, the title, and the first comment. The opening comment is identified by this
@@ -114,7 +115,7 @@ Adds a comment to the bug thread.
 | Field   | JSON key  | Type                      | Required | Description                                        |
 |---------|-----------|---------------------------|----------|----------------------------------------------------|
 | Message | `message` | string                    | yes      | Comment body; multi-line text                      |
-| Files   | `files`   | array of git hash strings | no       | Blobs referenced in `message`; none if absent      |
+| Files   | `files`   | array of git hashes       | no       | Blobs referenced in `message`; none if absent      |
 
 **Apply**: appends a new comment to the snapshot's comment list. The comment is identified
 by this operation's ID; its combined ID (see [ids.md](ids.md#5-combined-ids)) is
@@ -192,9 +193,9 @@ Edits the body of an existing comment (including the opening comment created by
 
 | Field   | JSON key  | Type                      | Required | Description                                                |
 |---------|-----------|---------------------------|----------|------------------------------------------------------------|
-| Target  | `target`  | 64-char hex string        | yes      | ID of the operation that originally created the comment    |
+| Target  | `target`  | operation ID              | yes      | ID of the operation that originally created the comment    |
 | Message | `message` | string                    | yes      | New comment body; multi-line text                          |
-| Files   | `files`   | array of git hash strings | no       | Blobs referenced in the new `message`; none if absent      |
+| Files   | `files`   | array of git hashes       | no       | Blobs referenced in the new `message`; none if absent      |
 
 **Apply**: locates the comment whose creating operation ID matches `target` and scans the
 timeline. If not found, the operation is a silent no-op. If found, the
@@ -230,7 +231,7 @@ full semantics. The `target` ID refers to any operation in the bug's history.
 
 | Field        | JSON key       | Type                   | Required |
 |--------------|----------------|------------------------|----------|
-| Target       | `target`       | 64-char hex string     | yes      |
+| Target       | `target`       | operation ID           | yes      |
 | New metadata | `new_metadata` | object (string→string) | no       |
 
 **Apply**: scans all operations in the snapshot for the one whose ID matches `target`, then

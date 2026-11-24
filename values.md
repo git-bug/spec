@@ -1,8 +1,8 @@
 # Specification: JSON and text
 
 This document specifies the rules that every format shares: how to read a JSON document,
-which strings are text and which are URLs a client may fetch. The specifications of the
-entities and of identities refer to it.
+which strings are text and which are URLs a client may fetch, and how bytes are written in
+base64. The specifications of the entities and of identities refer to it.
 
 
 ## 1. Overview
@@ -201,10 +201,21 @@ A fetch tells whoever hosts the URL the address of the client and when it fetche
 may fetch through a proxy, or only from hosts it trusts.
 
 
-## 10. Test vectors
+## 10. Base64
+
+*Base64* is the encoding of [RFC 4648 §4](https://www.rfc-editor.org/rfc/rfc4648#section-4):
+the letters `A`–`Z` and `a`–`z`, the digits, `+` and `/`, padded with `=` to a multiple of 4
+characters. The string holds nothing else, no line break in particular.
+
+The last character before the padding can carry bits that encode no byte. A writer sets them
+to 0, and a reader ignores them, as most decoders do: `AAE=` and `AAF=` both encode the bytes
+0 and 1.
+
+
+## 11. Test vectors
 
 Test vectors for text are in [`testdata/text.json`](testdata/text.json), and for HTTPS URLs
-in [`testdata/url.json`](testdata/url.json). Those for the JSON rules are among
+in [`testdata/url.json`](testdata/url.json). Those for the JSON rules and base64 are among
 the vectors of each format: the `ops` blobs of
 [`testdata/dag-entity.json`](testdata/dag-entity.json), and the operations of
 [`testdata/bug.json`](testdata/bug.json) and [`testdata/config.json`](testdata/config.json).
