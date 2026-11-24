@@ -51,9 +51,9 @@ an object with the following fields:
 | Field          | JSON key     | Type                    | Required | Description                                                                                                 |
 |----------------|--------------|-------------------------|----------|-------------------------------------------------------------------------------------------------------------|
 | Format version | `version`    | integer                 | yes      | Must equal 2                                                                                                |
-| Name           | `name`       | string                  | no       | Display name of the user                                                                                    |
-| Email          | `email`      | string                  | no       | Email address (from git config or bridge)                                                                   |
-| Login          | `login`      | string                  | no       | Username from a bridge (e.g. GitHub login)                                                                  |
+| Name           | `name`       | string                  | no       | Display name of the user; text                                                                              |
+| Email          | `email`      | string                  | no       | Email address (from git config or bridge); text                                                             |
+| Login          | `login`      | string                  | no       | Username from a bridge (e.g. GitHub login); text                                                            |
 | Avatar URL     | `avatar_url` | string                  | no       | URL to a profile picture                                                                                    |
 | Public keys    | `pub_keys`   | array of key objects    | no       | PGP public keys valid from this version onward                                                              |
 | Lamport times  | `times`      | object (string→integer) | yes      | Snapshot of all known clock values at the time this version was created (see [§4.1](#41-lamport-times-map)) |
@@ -65,6 +65,9 @@ A reader **must** reject a version whose blob breaks the rules of JSON documents
 `version` field does not equal 2. The maps of a version are `metadata` and `times`
 ([values.md §3](values.md#3-members-maps-and-null)). A reader reads an absent optional field
 as empty.
+
+`name`, `email` and `login` are text (see [values.md](values.md#5-text)), and `name` and
+`login` are not both blank. In `metadata`, each key is text and each value multi-line text.
 
 ### 4.1 Lamport times map
 

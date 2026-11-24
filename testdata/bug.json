@@ -123,7 +123,11 @@
     "valid": [
       {"op": {"type": 1, "title": "crash", "message": ""}, "note": "files is omitted: no file"},
       {"op": {"type": 1, "title": "crash", "message": "", "files": null}, "note": "null reads as absent: no file"},
-      {"op": {"type": 5, "added": ["bug"]}, "note": "removed is omitted: no label removed"}
+      {"op": {"type": 1, "title": "\u05d0 \u2067b\u2069", "message": ""}, "note": "an isolate that is closed"},
+      {"op": {"type": 3, "message": ""}, "note": "a comment may be blank"},
+      {"op": {"type": 3, "message": "line one\u2028line two"}, "note": "a comment is multi-line text: U+2028 is allowed"},
+      {"op": {"type": 5, "added": ["bug"]}, "note": "removed is omitted: no label removed"},
+      {"op": {"type": 1, "title": "crash", "message": "", "metadata": {"github-id": "I_1", "note": "a\nb"}}, "note": "a metadata value is multi-line text"}
     ],
     "invalid": [
       {"op": {"type": 1, "message": ""}, "note": "without a title"},
@@ -135,9 +139,18 @@
       {"op": {"type": 4, "status": 2, "timestamp": null}, "note": "a timestamp that is null is absent"},
       {"op": {"type": 4, "status": 2, "nonce": null}, "note": "a nonce that is null is absent"},
       {"op": {"type": 1, "title": null, "message": ""}, "note": "a title that is null is absent"},
+      {"op": {"type": 1, "title": "   ", "message": ""}, "note": "a blank title"},
+      {"op": {"type": 1, "title": "\u3164", "message": ""}, "note": "a title of a Hangul filler is blank"},
+      {"op": {"type": 1, "title": "a\tb", "message": ""}, "note": "a title is text: no tab"},
+      {"op": {"type": 1, "title": "a\u2028b", "message": ""}, "note": "a title is text: no line separator"},
+      {"op": {"type": 1, "title": "a\u2067b", "message": ""}, "note": "an isolate left open"},
       {"op": {"type": 1, "title": "crash", "message": "", "files": [null]}, "note": "an element of an array is never null"},
+      {"op": {"type": 3, "message": "a\u202eb"}, "note": "a right-to-left override"},
       {"op": {"type": 5}, "note": "neither added nor removed"},
+      {"op": {"type": 5, "added": [" "]}, "note": "a blank label"},
       {"op": {"type": 5, "added": [null]}, "note": "an element of an array is never null"},
+      {"op": {"type": 1, "title": "crash", "message": "", "metadata": {"a\nb": "x"}}, "note": "a metadata key is text: no line break"},
+      {"op": {"type": 8, "target": "ad3fe2d371f680ae2b9d012631fe2602ebf99efedcb8fdca7a926d65ba85056e", "new_metadata": {"k": "a\u0000b"}}, "note": "a metadata value holds no NUL"},
       {"op": {"type": 8, "target": "ad3fe2d371f680ae2b9d012631fe2602ebf99efedcb8fdca7a926d65ba85056e", "new_metadata": {"github-id": null}}, "note": "a value that is null in a map"}
     ]
   },

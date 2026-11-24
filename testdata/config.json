@@ -276,6 +276,7 @@
       {"op": {"type": 10001},                                                         "note": "without the value its kind requires"},
       {"op": {"type": 10001, "value": null},                                          "note": "a value that is null is absent"},
       {"op": {"type": 10001, "value": 42},                                            "note": "a value of the wrong type"},
+      {"op": {"type": 10001, "value": "first line\nsecond line"},                     "note": "the description is text: no line break"},
       {"op": {"type": 20001, "key": "crash", "fields": {"color": 42}},                "note": "a known field with a value of the wrong type"},
       {"op": {"type": 20001, "key": "crash", "fields": {"color": "#F44336"}},         "note": "a color is written in lowercase"},
       {"op": {"type": 20001, "key": "crash", "fields": {"description": ""}},          "note": "a description is not blank: clear clears it"},
@@ -285,6 +286,8 @@
       {"op": {"type": 20003},                                                         "note": "without the key its kind requires"},
       {"op": {"type": 20003, "key": null},                                            "note": "a key that is null is absent"},
       {"op": {"type": 20003, "key": ""},                                              "note": "a key is not empty"},
+      {"op": {"type": 20003, "key": "   "},                                           "note": "a label name is not blank"},
+      {"op": {"type": 20003, "key": "a\u202ebc"},                                     "note": "a label name is text: no bidirectional override"},
       {"op": {"type": 20003, "key": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"}, "note": "65 characters: a label name has at most 64"},
       {"op": {"type": 20003, "key": "crash"}, "omit": ["times"],                      "note": "without times"},
       {"op": {"type": 20003, "key": "crash", "times": null},                          "note": "times that is null is absent"}

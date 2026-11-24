@@ -51,7 +51,8 @@ A valid bug's first operation **must** be a `CreateOperation` (type 1). No other
 
 All operations include the common fields defined in
 [dag-entity.md §6.1](dag-entity.md#61-common-fields-present-in-every-operation).
-Only entity-specific fields are listed below.
+Only entity-specific fields are listed below. Text, multi-line text and blank text are
+defined in [values.md](values.md#5-text).
 
 ### 5.1 CreateOperation (type 1)
 
@@ -59,8 +60,8 @@ Creates the bug. The ID of this operation becomes the bug's ID.
 
 | Field   | JSON key  | Type                      | Required | Description                                        |
 |---------|-----------|---------------------------|----------|----------------------------------------------------|
-| Title   | `title`   | string                    | yes      | Single-line bug title; must not be empty           |
-| Message | `message` | string                    | yes      | Opening comment body (may be empty)                |
+| Title   | `title`   | string                    | yes      | Bug title; text, not blank                         |
+| Message | `message` | string                    | yes      | Opening comment; multi-line text                   |
 | Files   | `files`   | array of git hash strings | no       | Blobs referenced in `message`; none if absent      |
 
 **Apply**: initializes all snapshot fields. Sets the bug ID (equal to this operation's ID),
@@ -86,8 +87,8 @@ Changes the bug title.
 
 | Field          | JSON key | Type   | Required | Description                                           |
 |----------------|----------|--------|----------|-------------------------------------------------------|
-| New title      | `title`  | string | yes      | The new title                                         |
-| Previous title | `was`    | string | yes      | The title before this change (for display in history) |
+| New title      | `title`  | string | yes      | The new title; text, not blank                        |
+| Previous title | `was`    | string | yes      | Title before the change; text                         |
 
 **Apply**: replaces the snapshot title unconditionally. **Last-write-wins**: two concurrent
 title changes are resolved by the total operation order
@@ -112,7 +113,7 @@ Adds a comment to the bug thread.
 
 | Field   | JSON key  | Type                      | Required | Description                                        |
 |---------|-----------|---------------------------|----------|----------------------------------------------------|
-| Message | `message` | string                    | yes      | Comment body (may be empty)                        |
+| Message | `message` | string                    | yes      | Comment body; multi-line text                      |
 | Files   | `files`   | array of git hash strings | no       | Blobs referenced in `message`; none if absent      |
 
 **Apply**: appends a new comment to the snapshot's comment list. The comment is identified
@@ -156,7 +157,7 @@ Example:
 
 ### 5.5 LabelChangeOperation (type 5)
 
-Adds and/or removes labels. Labels are arbitrary non-empty strings.
+Adds and/or removes labels. A label is text that is not blank, of any length.
 
 | Field          | JSON key  | Type             | Required | Description                      |
 |----------------|-----------|------------------|----------|----------------------------------|
@@ -192,7 +193,7 @@ Edits the body of an existing comment (including the opening comment created by
 | Field   | JSON key  | Type                      | Required | Description                                                |
 |---------|-----------|---------------------------|----------|------------------------------------------------------------|
 | Target  | `target`  | 64-char hex string        | yes      | ID of the operation that originally created the comment    |
-| Message | `message` | string                    | yes      | New comment body                                           |
+| Message | `message` | string                    | yes      | New comment body; multi-line text                          |
 | Files   | `files`   | array of git hash strings | no       | Blobs referenced in the new `message`; none if absent      |
 
 **Apply**: locates the comment whose creating operation ID matches `target` and scans the

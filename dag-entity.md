@@ -149,6 +149,9 @@ Every operation is a JSON object with the following fields:
 The author of an operation is the one of its pack, and its ID is derived from its
 serialized bytes (see [§7](#7-id-derivation)).
 
+In `metadata`, each key is text and each value multi-line text (see
+[values.md](values.md#5-text)).
+
 A reader **must** treat the `timestamp` value as informational only — it is not verified and
 may be inaccurate.
 
@@ -189,7 +192,8 @@ a later `SetMetadataOperation`.
 | Target operation ID | `target`       | 64-char hex string     | yes      |
 | Metadata to add     | `new_metadata` | object (string→string) | no       |
 
-Without `new_metadata`, the operation adds no metadata.
+Without `new_metadata`, the operation adds no metadata. Its keys and values follow the
+rules of `metadata` ([§6.1](#61-common-fields-present-in-every-operation)).
 
 ### 6.6 NoOpOperation (generic pattern)
 
