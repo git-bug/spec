@@ -56,7 +56,7 @@
         "name": "Alice",
         "email": "alice@example.com",
         "pub_keys": [
-          "-----BEGIN PGP PUBLIC KEY BLOCK-----\n<armored key data>\n-----END PGP PUBLIC KEY BLOCK-----\n"
+          "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nxsBNBIhuCQABCACznrrLG41DbrdWbqNyEcMGA7xzmoWVJwYLSmU2qOF0rjXq3zKC\n9VVFJ+nPZS9ZsgdcscNpsiyDvo43PdiMng6ebmXMVxCGt3s2QwKoAFS6kJsFFZNx\neP2Cnd4jTtggS1ZYk1BrkogfpE0jxUYoWx3YrtoTIRsMtiB0AC8+8dTZNHZVUdXJ\nDrfgydYJCtWapK0Zfu55q/48TJGJOvjIeTiNvxPbps1Cn+6lIoOAg+I1S+1GIo+d\nGOq6CxJmwCSGgsqyaC1tzIkeIGOyH+ZS0vVLJI+/PcT0Bb0nbVkqv6nqnyPkVL6d\nEt6Nivj7DSc8vABo3GvV2ggQ6acNTWacrgkZABEBAAE=\n=6Blg\n-----END PGP PUBLIC KEY BLOCK-----"
         ],
         "nonce": "BBBBBBBBBBBBBBBBBBBBBBBBBBBB"
       },
