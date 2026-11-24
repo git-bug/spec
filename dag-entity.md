@@ -132,8 +132,8 @@ Every operation is a JSON object with the following fields:
 | Nonce     | `nonce`     | base64 string          | yes      | Random bytes (20–64 bytes) to ensure ID uniqueness    |
 | Metadata  | `metadata`  | object (string→string) | no       | Arbitrary key/value pairs (bridge metadata, etc.)     |
 
-`author` and `id` are **not** stored in the operation JSON. The author comes from the
-enclosing pack; the ID is derived from the serialized bytes (see [§7](#7-id-derivation)).
+The author of an operation is the one of its pack, and its ID is derived from its
+serialized bytes (see [§7](#7-id-derivation)).
 
 A reader **must** treat the `timestamp` value as informational only — it is not verified and
 may be inaccurate.

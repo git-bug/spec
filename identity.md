@@ -95,10 +95,9 @@ Each entry in `pub_keys` is a JSON string containing an ASCII-armored OpenPGP pu
 **must** be ignored by readers.
 
 **The `pub_keys` array declares the complete set of valid keys for this version onward.**
-It is not a delta from the previous version. To add a key, write a new version whose
-`pub_keys` contains all previously valid keys plus the new one. To revoke a key, write a
-new version whose `pub_keys` omits it. An empty array means no keys are valid from this
-version onward.
+To add a key, write a new version whose `pub_keys` contains all previously valid keys plus
+the new one. To revoke a key, write a new version whose `pub_keys` omits it. An empty array
+means no keys are valid from this version onward.
 
 This model supports multiple keys simultaneously (e.g. one per device) as well as key
 rotation: a user can add a new key before revoking the old one to avoid a gap in signing

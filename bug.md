@@ -90,7 +90,8 @@ Changes the bug title.
 | Previous title | `was`    | string | yes      | The title before this change (for display in history) |
 
 **Apply**: replaces the snapshot title unconditionally. **Last-write-wins**: two concurrent
-title changes are resolved by the total operation order (§9 of the DAG spec) — the one that
+title changes are resolved by the total operation order
+([dag-entity.md §9](dag-entity.md#9-operation-ordering)) — the one that
 sorts last wins. The `was` field is informational only and is not validated against the
 current snapshot state.
 
@@ -118,7 +119,8 @@ Adds a comment to the bug thread.
 by this operation's ID; its combined ID (see [ids.md](ids.md#5-combined-ids)) is
 exposed in APIs and UIs. **Grow-only log semantics**: two concurrent `AddCommentOperation`s
 both survive as distinct comments; no comment is ever dropped or overwritten by another.
-Their relative order in the list follows the total operation order (§9 of the DAG spec).
+Their relative order in the list follows the total operation order
+([dag-entity.md §9](dag-entity.md#9-operation-ordering)).
 
 Example:
 ```json
