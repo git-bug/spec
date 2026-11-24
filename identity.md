@@ -55,23 +55,26 @@ an object with the following fields:
 | Email          | `email`      | string                  | no       | Email address (from git config or bridge); text                                                             |
 | Login          | `login`      | string                  | no       | Username from a bridge (e.g. GitHub login); text                                                            |
 | Avatar URL     | `avatar_url` | string                  | no       | URL to a profile picture; HTTPS URL                                                                         |
-| Public keys    | `pub_keys`   | array of key objects    | no       | PGP public keys valid from this version onward                                                              |
+| Public keys    | `pub_keys`   | array of strings        | no       | ASCII-armored OpenPGP public keys valid from this version onward (see [§4.2](#42-keys-and-key-lifecycle))   |
 | Lamport times  | `times`      | object (string→integer) | yes      | Snapshot of all known clock values at the time this version was created (see [§4.1](#41-lamport-times-map)) |
 | Unix timestamp | `unix_time`  | integer                 | yes      | Wall-clock time of version creation (seconds since epoch), not 0                                            |
 | Nonce          | `nonce`      | base64 string           | yes      | Random bytes (20–64 bytes) to ensure ID uniqueness of the first version                                     |
 | Metadata       | `metadata`   | object (string→string)  | no       | Arbitrary key/value pairs                                                                                   |
 
-A reader **must** reject a version whose blob breaks the rules of JSON documents, or whose
-`version` field does not equal 2. The maps of a version are `metadata` and `times`
-([values.md §3](values.md#3-members-maps-and-null)). A reader reads an absent optional field
-as empty.
+A reader **must** reject a version whose blob breaks the rules of JSON documents, that
+[values.md §3–4](values.md#3-members-maps-and-null) makes invalid, with a member of another
+type than the table gives, or whose `version` field does not equal 2. The maps of a version
+are `metadata` and `times`. A reader reads an absent optional field as empty.
 
 `name`, `email` and `login` are text (see [values.md](values.md#5-text)), and `name` and
 `login` are not both blank. In `metadata`, each key is text and each value multi-line text.
 `nonce` is base64 ([values.md §10](values.md#10-base64)).
 
 An `avatar_url` that is not empty is an HTTPS URL
-([values.md §9](values.md#9-https-urls)). A client shows its picture when it can fetch it.
+([values.md §9](values.md#9-https-urls)): a writer writes no other. A reader reads any other
+value as absent, without making the version invalid: git-bug v0.12.0 wrote any URL, and a
+picture is not worth rejecting an identity. A client shows its picture when it can fetch
+it.
 
 ### 4.1 Lamport times map
 
@@ -93,7 +96,7 @@ and the most recent edit clock is 137:
 As new entity types are added to a repository (e.g. `prs`, `boards`), their clocks appear
 here too. A reader must tolerate unknown keys in this map.
 
-### 4.2 Key objects and key lifecycle
+### 4.2 Keys and key lifecycle
 
 > [!WARNING]
 > Key management is not yet fully operational. The data structures and signature
@@ -186,6 +189,28 @@ Version with a public key and a bridge login:
 ```
 
 
+### 4.5 Invalid versions
+
+A version that a reader doesn't reject but that breaks another rule of this section is
+*invalid*: for example one without `times`, or whose `name` is not text. Unlike an
+operation ([dag-entity.md §6](dag-entity.md#6-operations)), an invalid version is not
+skipped: the versions form a chain, which the keys and clocks of later versions and the
+signatures of entities rely on ([§4.2](#42-keys-and-key-lifecycle),
+[§7](#7-key-lookup-for-signature-verification)). A client judges a version when it takes it
+in, not each time it reads it:
+
+- **Merging** ([§6](#6-merge)): a client **must** reject a remote identity when a version it
+  takes in, one past its own tip, is invalid. It keeps its own version of the identity and
+  reports the remote one as invalid.
+- **Writing**: a writer **must not** write an invalid version. The versions already in the
+  identity were judged when it took them in.
+- **Reading** an identity it holds: a reader uses an invalid version as it is.
+
+An identity can hold an invalid version that no merge rejected: one judged valid by earlier
+rules, or pushed to a repository directly. Rejecting the identity there would make it
+unreadable for good, and with it every entity whose operations it authored.
+
+
 ## 5. ID derivation
 
 The identity's ID is the SHA-256 of the exact bytes of the **first version's JSON blob**:
@@ -216,6 +241,9 @@ When a remote identity is fetched:
 This policy exists because an identity should be controlled by a single user. Concurrent
 edits from two independent repositories are unusual, and silent merging could result in
 inconsistent key sets.
+
+Before taking in versions, the client judges them ([§4.5](#45-invalid-versions)): all the
+versions of an identity it doesn't hold yet, otherwise those past its own tip.
 
 
 ## 7. Key lookup for signature verification

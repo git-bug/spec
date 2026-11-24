@@ -64,6 +64,21 @@
         "pub_keys is an array of armored OpenPGP public key strings.",
         "The OpenPGP key's creation time is set to the zero value and must be ignored."
       ]
+    },
+    {
+      "description": "Identity version with an avatar URL that is not an HTTPS URL, as git-bug v0.12.0 could write",
+      "json": {
+        "version": 2,
+        "times": {"bugs-create": 2, "bugs-edit": 4},
+        "unix_time": 1614556800,
+        "name": "Bob",
+        "avatar_url": "http://gitlab.example.org/uploads/avatar.png",
+        "nonce": "CCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+      },
+      "notes": [
+        "avatar_url is not an HTTPS URL: it reads as absent, and the version is not invalid.",
+        "A writer never writes it."
+      ]
     }
   ]
 }
