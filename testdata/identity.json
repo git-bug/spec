@@ -43,7 +43,7 @@
         "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       },
       "notes": [
-        "'pub_keys', 'login', 'avatar_url', and 'metadata' are omitted when empty (omitempty).",
+        "'pub_keys', 'login', 'avatar_url' and 'metadata' are absent: they read as empty.",
         "The identity ID equals hex(sha256(these exact JSON bytes)) for the first version."
       ]
     },
@@ -56,13 +56,28 @@
         "name": "Alice",
         "email": "alice@example.com",
         "pub_keys": [
-          "-----BEGIN PGP PUBLIC KEY BLOCK-----\n<armored key data>\n-----END PGP PUBLIC KEY BLOCK-----\n"
+          "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nxsBNBIhuCQABCACznrrLG41DbrdWbqNyEcMGA7xzmoWVJwYLSmU2qOF0rjXq3zKC\n9VVFJ+nPZS9ZsgdcscNpsiyDvo43PdiMng6ebmXMVxCGt3s2QwKoAFS6kJsFFZNx\neP2Cnd4jTtggS1ZYk1BrkogfpE0jxUYoWx3YrtoTIRsMtiB0AC8+8dTZNHZVUdXJ\nDrfgydYJCtWapK0Zfu55q/48TJGJOvjIeTiNvxPbps1Cn+6lIoOAg+I1S+1GIo+d\nGOq6CxJmwCSGgsqyaC1tzIkeIGOyH+ZS0vVLJI+/PcT0Bb0nbVkqv6nqnyPkVL6d\nEt6Nivj7DSc8vABo3GvV2ggQ6acNTWacrgkZABEBAAE=\n=6Blg\n-----END PGP PUBLIC KEY BLOCK-----"
         ],
         "nonce": "BBBBBBBBBBBBBBBBBBBBBBBBBBBB"
       },
       "notes": [
         "pub_keys is an array of armored OpenPGP public key strings.",
         "The OpenPGP key's creation time is set to the zero value and must be ignored."
+      ]
+    },
+    {
+      "description": "Identity version with an avatar URL that is not an HTTPS URL, as git-bug v0.12.0 could write",
+      "json": {
+        "version": 2,
+        "times": {"bugs-create": 2, "bugs-edit": 4},
+        "unix_time": 1614556800,
+        "name": "Bob",
+        "avatar_url": "http://gitlab.example.org/uploads/avatar.png",
+        "nonce": "CCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+      },
+      "notes": [
+        "avatar_url is not an HTTPS URL: it reads as absent, and the version is not invalid.",
+        "A writer never writes it."
       ]
     }
   ]

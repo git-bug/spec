@@ -28,7 +28,7 @@ Operation types are encoded as integers in the `type` field of each operation JS
 
 | Constant        | Integer | Description                                                             |
 |-----------------|---------|-------------------------------------------------------------------------|
-| `CreateOp`      | 1       | Create the bug (must be the first and only operation in the first pack) |
+| `CreateOp`      | 1       | Create the bug (the first operation, and only it)                       |
 | `SetTitleOp`    | 2       | Change the bug title                                                    |
 | `AddCommentOp`  | 3       | Add a comment                                                           |
 | `SetStatusOp`   | 4       | Change the bug status                                                   |
@@ -43,15 +43,18 @@ A reader **must** accept packs containing type values not listed above (see
 
 ## 4. Initial invariant
 
-A valid bug's first operation **must** be a `CreateOperation` (type 1). No other
-`CreateOperation` may appear in subsequent operations.
+A bug's first operation **must** be a `CreateOperation` (type 1). A `CreateOperation`
+anywhere else is invalid ([dag-entity.md §6](dag-entity.md#6-operations)).
 
 
 ## 5. Operation schemas
 
 All operations include the common fields defined in
 [dag-entity.md §6.1](dag-entity.md#61-common-fields-present-in-every-operation).
-Only entity-specific fields are listed below.
+Only entity-specific fields are listed below. Text, multi-line text and blank text are
+defined in [values.md](values.md#5-text), operation IDs in [ids.md §1](ids.md#1-format), and
+git hashes in [dag-entity.md §6.3](dag-entity.md#63-file-attachments). An operation that breaks these rules is
+invalid ([dag-entity.md §6](dag-entity.md#6-operations)).
 
 ### 5.1 CreateOperation (type 1)
 
@@ -59,14 +62,14 @@ Creates the bug. The ID of this operation becomes the bug's ID.
 
 | Field   | JSON key  | Type                      | Required | Description                                        |
 |---------|-----------|---------------------------|----------|----------------------------------------------------|
-| Title   | `title`   | string                    | yes      | Single-line bug title; must not be empty           |
-| Message | `message` | string                    | yes      | Opening comment body (may be empty)                |
-| Files   | `files`   | array of git hash strings | yes      | Blobs referenced in `message`; empty array if none |
+| Title   | `title`   | string                    | yes      | Bug title; text, not blank                         |
+| Message | `message` | string                    | yes      | Opening comment; multi-line text                   |
+| Files   | `files`   | array of git hashes       | no       | Blobs referenced in `message`; none if absent      |
 
 **Apply**: initializes all snapshot fields. Sets the bug ID (equal to this operation's ID),
 the author, the title, and the first comment. The opening comment is identified by this
 operation's ID; its combined ID (see [ids.md](ids.md#5-combined-ids)) is exposed in
-APIs and UIs. A second `CreateOperation` encountered during replay is silently ignored.
+APIs and UIs.
 
 Example:
 ```json
@@ -86,11 +89,12 @@ Changes the bug title.
 
 | Field          | JSON key | Type   | Required | Description                                           |
 |----------------|----------|--------|----------|-------------------------------------------------------|
-| New title      | `title`  | string | yes      | The new title                                         |
-| Previous title | `was`    | string | yes      | The title before this change (for display in history) |
+| New title      | `title`  | string | yes      | The new title; text, not blank                        |
+| Previous title | `was`    | string | yes      | Title before the change; text                         |
 
 **Apply**: replaces the snapshot title unconditionally. **Last-write-wins**: two concurrent
-title changes are resolved by the total operation order (§9 of the DAG spec) — the one that
+title changes are resolved by the total operation order
+([dag-entity.md §9](dag-entity.md#9-operation-ordering)) — the one that
 sorts last wins. The `was` field is informational only and is not validated against the
 current snapshot state.
 
@@ -111,14 +115,15 @@ Adds a comment to the bug thread.
 
 | Field   | JSON key  | Type                      | Required | Description                                        |
 |---------|-----------|---------------------------|----------|----------------------------------------------------|
-| Message | `message` | string                    | yes      | Comment body (may be empty)                        |
-| Files   | `files`   | array of git hash strings | yes      | Blobs referenced in `message`; empty array if none |
+| Message | `message` | string                    | yes      | Comment body; multi-line text                      |
+| Files   | `files`   | array of git hashes       | no       | Blobs referenced in `message`; none if absent      |
 
 **Apply**: appends a new comment to the snapshot's comment list. The comment is identified
 by this operation's ID; its combined ID (see [ids.md](ids.md#5-combined-ids)) is
 exposed in APIs and UIs. **Grow-only log semantics**: two concurrent `AddCommentOperation`s
 both survive as distinct comments; no comment is ever dropped or overwritten by another.
-Their relative order in the list follows the total operation order (§9 of the DAG spec).
+Their relative order in the list follows the total operation order
+([dag-entity.md §9](dag-entity.md#9-operation-ordering)).
 
 Example:
 ```json
@@ -154,12 +159,12 @@ Example:
 
 ### 5.5 LabelChangeOperation (type 5)
 
-Adds and/or removes labels. Labels are arbitrary non-empty strings.
+Adds and/or removes labels. A label is text that is not blank, of any length.
 
-| Field          | JSON key  | Type             | Required | Description                    |
-|----------------|-----------|------------------|----------|--------------------------------|
-| Added labels   | `added`   | array of strings | yes      | Labels to add; may be empty    |
-| Removed labels | `removed` | array of strings | yes      | Labels to remove; may be empty |
+| Field          | JSON key  | Type             | Required | Description                      |
+|----------------|-----------|------------------|----------|----------------------------------|
+| Added labels   | `added`   | array of strings | no       | Labels to add; none if absent    |
+| Removed labels | `removed` | array of strings | no       | Labels to remove; none if absent |
 
 At least one of `added` or `removed` must be non-empty.
 
@@ -189,9 +194,9 @@ Edits the body of an existing comment (including the opening comment created by
 
 | Field   | JSON key  | Type                      | Required | Description                                                |
 |---------|-----------|---------------------------|----------|------------------------------------------------------------|
-| Target  | `target`  | 64-char hex string        | yes      | ID of the operation that originally created the comment    |
-| Message | `message` | string                    | yes      | New comment body                                           |
-| Files   | `files`   | array of git hash strings | yes      | Blobs referenced in the new `message`; empty array if none |
+| Target  | `target`  | operation ID              | yes      | ID of the operation that originally created the comment    |
+| Message | `message` | string                    | yes      | New comment body; multi-line text                          |
+| Files   | `files`   | array of git hashes       | no       | Blobs referenced in the new `message`; none if absent      |
 
 **Apply**: locates the comment whose creating operation ID matches `target` and scans the
 timeline. If not found, the operation is a silent no-op. If found, the
@@ -225,16 +230,16 @@ See [dag-entity.md §6.6](dag-entity.md#66-noopoperation-generic-pattern).
 See [dag-entity.md §6.5](dag-entity.md#65-setmetadataoperation-generic-pattern) for the
 full semantics. The `target` ID refers to any operation in the bug's history.
 
+| Field        | JSON key       | Type                   | Required |
+|--------------|----------------|------------------------|----------|
+| Target       | `target`       | operation ID           | yes      |
+| New metadata | `new_metadata` | object (string→string) | no       |
+
 **Apply**: scans all operations in the snapshot for the one whose ID matches `target`, then
 merges `new_metadata` into its metadata map. **First-write-wins per key**: if a key is
 already present (set by the operation's inline `metadata` or a prior `SetMetadataOperation`
 in the total order), the new value is silently discarded. This means the first annotation
 that arrives in operation order persists permanently and cannot be overridden.
-
-| Field        | JSON key       | Type                   | Required |
-|--------------|----------------|------------------------|----------|
-| Target       | `target`       | 64-char hex string     | yes      |
-| New metadata | `new_metadata` | object (string→string) | yes      |
 
 
 ## 6. Operation metadata
