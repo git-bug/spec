@@ -81,6 +81,9 @@ A reader **must** reject an entity that violates any of the following:
 - Merge commits (more than one parent) carry zero operations in their `ops` blob.
 - The first (root) commit has a `create-clock-<N>` entry with N > 0.
 - Every commit has an `edit-clock-<N>` entry.
+- Every clock entry has an N of at most 2⁵³ − 1, the largest integer of
+  [values.md §4](values.md#4-integers): a client records the clocks it witnesses in JSON,
+  as in the `times` of an identity version.
 - Every commit's edit-clock is strictly greater than every one of its parents' edit-clocks.
 - For non-merge commits, the edit-clock **must not** exceed the parent's edit-clock by more
   than 1,000,000 (guard against clock-spam attacks). Merge commits are exempt from this
@@ -368,7 +371,7 @@ A conforming **writer**:
 - Sets a nonce of 20–64 random bytes in every operation.
 - Writes each `ops` blob by the rules of [values.md](values.md): without `null`, with integers
   within range.
-- Encodes clock values in tree entry names pointing to the empty blob.
+- Encodes clock values, at most 2⁵³ − 1, in tree entry names pointing to the empty blob.
 - Signs commits when the author has a registered key.
 - Does not modify or discard operation packs it does not understand.
 - Assigns edit-clock values that are strictly greater than any parent pack's edit-clock,
