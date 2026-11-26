@@ -30,12 +30,15 @@ reject a document that:
 - holds an escaped surrogate, `\uD800` to `\uDFFF`, other than a high surrogate followed by
   a low one;
 - starts with a byte order mark, U+FEFF;
-- holds an object with two members of the same name.
+- holds an object with two members of the same name;
+- nests deeper than 64 levels: the document is at level 1, and an object or an array within
+  an object or an array is one level deeper.
 
 Member names match exactly, case included: in a bug operation, `Title` is an unknown member.
 Many JSON decoders replace invalid UTF-8 or a lone surrogate with U+FFFD, skip a byte order
-mark, keep the last of two members of the same name, or match names regardless of case, so
-a reader checks these rules on the blob itself.
+mark, keep the last of two members of the same name, match names regardless of case, or
+stop at a depth of their own, so a reader checks these rules on the blob itself. The
+formats nest a few levels deep, and 64 is within the limit of common decoders.
 
 
 ## 3. Members, maps and null

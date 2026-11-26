@@ -96,6 +96,10 @@ and the most recent edit clock is 137:
 As new entity types are added to a repository (e.g. `prs`, `boards`), their clocks appear
 here too. A reader must tolerate unknown keys in this map.
 
+A version holds every key of the `times` of the version before it, each with a value at
+least as high: a clock never goes back. A version that drops a key or lowers a value is
+invalid ([§4.5](#45-invalid-versions)).
+
 ### 4.2 Keys and key lifecycle
 
 > [!WARNING]
