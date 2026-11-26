@@ -88,6 +88,7 @@ A reader **must** reject an entity that violates any of the following:
 - For non-merge commits, the edit-clock **must not** exceed the parent's edit-clock by more
   than 1,000,000 (guard against clock-spam attacks). Merge commits are exempt from this
   limit to allow merging two diverged histories with a large clock gap between them.
+  [§10](#10-merge-algorithm) bounds them, and the root, when a merge takes them in.
 
 
 ## 5. Operation pack blob
@@ -263,10 +264,11 @@ Clock values are encoded as decimal integers in git tree entry names (e.g.
 `create-clock-14`, `edit-clock-137`). The entries point to the empty blob; no data is
 stored in blob content.
 
-When reading an entity, a reader **must witness** the clock values it observes. Witnessing
-means: if an observed value is greater than the local clock, advance the local clock to
-that value. This ensures that new events created after reading are causally ordered after
-the read events.
+A client **must witness** the clock values of an entity it holds when it reads it, and of a
+remote entity when a merge takes it in ([§10](#10-merge-algorithm)): a rejected entity
+leaves the clocks unchanged. Witnessing means: if an observed value is greater than the
+local clock, advance the local clock to that value. This ensures that new events created
+after reading are causally ordered after the read events.
 
 
 ## 9. Operation ordering
@@ -301,6 +303,14 @@ scenarios 1, 4 and 6, it judges the operations it takes in ([§6](#6-operations)
 | 4. Fast-forward      | Local tip is an ancestor of remote tip                     | Advance local reference to remote tip |
 | 5. No common history | Local and remote have different root commits               | No action, report a conflict          |
 | 6. Diverged          | Neither tip is an ancestor of the other (concurrent edits) | Create a merge commit                 |
+
+**Clocks taken in**: a client **must** reject a remote entity whose merge takes in a root or
+a merge commit with a creation or edit clock more than 1,000,000 above the client's clock
+of the same kind.
+[§4](#4-dag-topology-constraints) bounds the other commits by their parents, but not those:
+without this rule, a single commit could push the clocks to their limit (2⁵³ − 1), and stop
+every write that needs a later time. An entity rejected because the client's clock is far
+behind the remote's is taken in by a later merge, once other entities raised the clock.
 
 **Scenario 5 in detail**: joining two histories with different roots would give a DAG with
 two roots, which [§4](#4-dag-topology-constraints) rejects. Both histories descend from
@@ -357,10 +367,13 @@ A conforming **reader**:
   operation is invalid ([§6](#6-operations)).
 - Rejects a remote entity when an operation it takes in by merging is invalid
   ([§6](#6-operations)).
+- Rejects a remote entity when a root or a merge commit it takes in by merging has a clock
+  more than 1,000,000 above its own ([§10](#10-merge-algorithm)).
 - Checks the format version before decoding and returns a clear error on mismatch.
 - Verifies commit signatures when the author has registered keys ([§11](#11-signing)).
 - Accepts and silently skips operation types it does not recognize ([§6.4](#64-unknown-operation-types)).
-- Witnesses Lamport clock values ([§8](#8-lamport-clocks)).
+- Witnesses Lamport clock values, those of a remote entity once a merge takes it in
+  ([§8](#8-lamport-clocks)).
 - Uses the clock-based operation ordering ([§9](#9-operation-ordering)).
 - Ignores entity namespaces it does not implement.
 - Never merges histories with different root commits ([§10](#10-merge-algorithm), scenario 5).
